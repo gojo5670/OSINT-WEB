@@ -1,0 +1,1198 @@
+/* Batman Theme Colors */
+:root {
+    --bat-black: #0a0e14;
+    --bat-dark: #1a1d24;
+    --bat-gray: #2a2e35;
+    --bat-yellow: #ffcc00;
+    --bat-gold: #d4af37;
+    --bat-light-gray: #7a7c80;
+    --bat-white: #f8f9fa;
+    --bat-blue: #1f3d5c;
+    --bat-red: #8b0000;
+    --success-color: #2e7d32;
+    --danger-color: #c62828;
+    --warning-color: #ffcc00;
+}
+
+/* Global Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    cursor: none !important;
+}
+
+body {
+    font-family: 'Roboto Condensed', sans-serif;
+    line-height: 1.6;
+    background-color: var(--bat-black);
+    color: var(--bat-white);
+    position: relative;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    position: relative;
+    z-index: 10;
+}
+
+/* Header and Logo Styles */
+header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 20px 20px 30px;
+    background-color: var(--bat-dark);
+    color: var(--bat-white);
+    border-radius: 10px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--bat-gray);
+    position: relative;
+    overflow: hidden;
+}
+
+header::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(26, 29, 36, 0.3);
+    z-index: 0;
+}
+
+.logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 0;
+}
+
+dotlottie-player {
+    max-width: 100%;
+    margin: -30px; /* Negative margin to make the logo appear larger */
+}
+
+header h1 {
+    font-family: 'Oswald', sans-serif;
+    font-size: 3rem;
+    margin-bottom: 10px;
+    letter-spacing: 3px;
+    text-shadow: 0 0 10px rgba(255, 204, 0, 0.3);
+    color: var(--bat-yellow);
+    position: relative;
+    z-index: 1;
+    margin-top: -20px; /* Adjust to bring title closer to the logo */
+}
+
+header p {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    letter-spacing: 1px;
+    position: relative;
+    z-index: 1;
+}
+
+.batman-logo-small {
+    width: 40px;
+    height: 24px;
+    fill: var(--bat-yellow);
+    margin-right: 10px;
+}
+
+/* Search Container Styles */
+.search-container {
+    background-color: var(--bat-dark);
+    border-radius: 10px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+    margin-bottom: 30px;
+    overflow: hidden;
+    border: 1px solid var(--bat-gray);
+}
+
+/* Tab Styles */
+.search-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    background-color: transparent;
+    border-bottom: 1px solid var(--bat-gray);
+    position: relative;
+    z-index: 20;
+}
+
+.tab-btn {
+    width: auto;
+    height: 50px;
+    padding: 0 15px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+    flex: 1;
+    text-align: center;
+    min-width: 120px;
+    font-family: 'Oswald', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: transparent;
+    border-radius: 0;
+    color: var(--bat-light-gray);
+}
+
+.tab-btn i {
+    margin-left: 8px;
+    font-size: 0.9rem;
+    position: relative;
+    z-index: 2;
+}
+
+.tab-btn:hover {
+    color: var(--bat-white);
+}
+
+.tab-btn.active {
+    background-color: transparent;
+    border-bottom: 3px solid var(--bat-yellow);
+    color: var(--bat-yellow);
+}
+
+/* Tab Content Styles */
+.tab-content {
+    display: none;
+    padding: 30px;
+    position: relative;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.tab-content h2 {
+    color: var(--bat-yellow);
+    margin-bottom: 15px;
+    font-family: 'Oswald', sans-serif;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-size: 1.5rem;
+}
+
+.tab-content p {
+    margin-bottom: 20px;
+    color: var(--bat-light-gray);
+}
+
+/* Search Form Styles */
+.search-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.search-form input {
+    padding: 15px;
+    background-color: var(--bat-gray);
+    border: 1px solid var(--bat-light-gray);
+    border-radius: 5px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    color: var(--bat-white);
+    font-family: 'Roboto Condensed', sans-serif;
+}
+
+.search-form input:focus {
+    outline: none;
+    border-color: var(--bat-yellow);
+    box-shadow: 0 0 0 2px rgba(255, 204, 0, 0.25);
+}
+
+.search-form input::placeholder {
+    color: var(--bat-light-gray);
+}
+
+.search-form button {
+    padding: 15px 20px;
+    background-color: var(--bat-yellow);
+    color: var(--bat-black);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 700;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: 'Oswald', sans-serif;
+    position: relative;
+    overflow: hidden;
+}
+
+.search-form button::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: 0.5s;
+}
+
+.search-form button:hover::before {
+    left: 100%;
+}
+
+.search-form button:hover {
+    background-color: var(--bat-gold);
+    box-shadow: 0 0 20px rgba(255, 204, 0, 0.4);
+}
+
+.search-form button i {
+    margin-left: 8px;
+}
+
+/* Results Container Styles */
+.results-container {
+    background-color: var(--bat-dark);
+    border-radius: 10px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+    padding: 30px;
+    min-height: 300px;
+    border: 1px solid var(--bat-gray);
+    position: relative;
+}
+
+.results-container h2 {
+    color: var(--bat-yellow);
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--bat-gray);
+    padding-bottom: 10px;
+    font-family: 'Oswald', sans-serif;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+#results {
+    margin-top: 20px;
+}
+
+.result-card {
+    background-color: var(--bat-gray);
+    border-left: 4px solid var(--bat-yellow);
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.result-card h3 {
+    color: var(--bat-yellow);
+    margin-bottom: 15px;
+    font-family: 'Oswald', sans-serif;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.result-card p {
+    margin-bottom: 8px;
+    color: var(--bat-white);
+}
+
+.result-card strong {
+    color: var(--bat-yellow);
+}
+
+.result-card .copyable {
+    background-color: var(--bat-black);
+    padding: 5px 10px;
+    border-radius: 3px;
+    font-family: monospace;
+    cursor: pointer;
+    display: inline-block;
+    margin-top: 5px;
+    color: var(--bat-white);
+    border: 1px solid var(--bat-light-gray);
+    transition: all 0.3s ease;
+}
+
+.result-card .copyable:hover {
+    background-color: var(--bat-gray);
+    border-color: var(--bat-yellow);
+}
+
+/* Loading Spinner */
+#loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(255, 204, 0, 0.1);
+    border-radius: 50%;
+    border-left-color: var(--bat-yellow);
+    animation: spin 1s linear infinite;
+    margin-bottom: 15px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Footer Styles */
+footer {
+    text-align: center;
+    margin-top: 30px;
+    padding: 20px;
+    color: var(--bat-light-gray);
+    background-color: var(--bat-dark);
+    border-radius: 10px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--bat-gray);
+    position: relative;
+}
+
+.footer-content {
+    position: relative;
+    z-index: 2;
+}
+
+footer a {
+    color: var(--bat-yellow);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+footer a:hover {
+    text-decoration: underline;
+    color: var(--bat-gold);
+    text-shadow: 0 0 5px rgba(255, 204, 0, 0.3);
+}
+
+.disclaimer {
+    font-size: 0.9rem;
+    margin-top: 10px;
+    color: var(--bat-light-gray);
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(10, 14, 20, 0.9);
+    overflow: auto;
+}
+
+.modal-content {
+    background-color: var(--bat-dark);
+    margin: 10% auto;
+    padding: 30px;
+    border-radius: 10px;
+    max-width: 600px;
+    box-shadow: 0 0 30px rgba(255, 204, 0, 0.3);
+    position: relative;
+    border: 1px solid var(--bat-gray);
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modal-header dotlottie-player {
+    margin: 0;
+    width: 60px;
+    height: 60px;
+    margin-right: 15px;
+}
+
+.close-modal {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 28px;
+    font-weight: bold;
+    color: var(--bat-light-gray);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.close-modal:hover {
+    color: var(--bat-yellow);
+}
+
+.modal h2 {
+    color: var(--bat-yellow);
+    margin-bottom: 0;
+    font-family: 'Oswald', sans-serif;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.modal ul {
+    margin-left: 20px;
+    margin-bottom: 20px;
+    color: var(--bat-white);
+}
+
+.modal li {
+    margin-bottom: 10px;
+}
+
+.modal strong {
+    color: var(--bat-yellow);
+}
+
+.modal p {
+    color: var(--bat-light-gray);
+}
+
+/* Info Button */
+.info-button {
+    background-color: rgba(255, 204, 0, 0.2) !important;
+    color: var(--bat-yellow) !important;
+    border: 1px solid var(--bat-yellow) !important;
+}
+
+.info-button:hover {
+    background-color: var(--bat-yellow) !important;
+    color: var(--bat-black) !important;
+}
+
+/* Message Styles */
+.success-message {
+    background-color: rgba(46, 125, 50, 0.2);
+    color: #81c784;
+    border-left: 4px solid var(--success-color);
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+}
+
+.error-message {
+    background-color: rgba(198, 40, 40, 0.2);
+    color: #ef9a9a;
+    border-left: 4px solid var(--danger-color);
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+}
+
+.warning-message {
+    background-color: rgba(255, 204, 0, 0.2);
+    color: var(--bat-yellow);
+    border-left: 4px solid var(--warning-color);
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.warning-message .spinner {
+    border-left-color: var(--warning-color);
+    margin: 15px auto;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .tab-btn {
+        padding: 12px 10px;
+        font-size: 0.8rem;
+    }
+    
+    .tab-content {
+        padding: 20px;
+    }
+    
+    .search-form {
+        flex-direction: column;
+    }
+    
+    .search-form input,
+    .search-form button {
+        width: 100%;
+    }
+    
+    .modal-content {
+        margin: 20% auto;
+        width: 90%;
+    }
+    
+    header h1 {
+        font-size: 2.2rem;
+    }
+    
+    .batman-logo {
+        width: 60px;
+        height: 36px;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.tab-content.active {
+    animation: fadeIn 0.5s;
+}
+
+.result-card {
+    animation: fadeIn 0.5s;
+}
+
+/* Bat-themed scrollbar */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bat-black);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--bat-gray);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--bat-yellow);
+}
+
+/* Glow on hover effect for buttons */
+.glow-on-hover, .batman-button, .tab-btn {
+    border: none;
+    outline: none;
+    color: #fff;
+    background: transparent;
+    cursor: pointer;
+    position: relative;
+    z-index: 0;
+    border-radius: 10px;
+}
+
+.glow-on-hover:before, .batman-button:before, .tab-btn:before {
+    content: '';
+    background: linear-gradient(45deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000);
+    position: absolute;
+    top: -2px;
+    left:-2px;
+    background-size: 400%;
+    z-index: -1;
+    filter: blur(5px);
+    width: calc(100% + 4px);
+    height: calc(100% + 4px);
+    animation: glowing 20s linear infinite;
+    opacity: 0;
+    transition: opacity .3s ease-in-out;
+    border-radius: 10px;
+}
+
+.glow-on-hover:active, .batman-button:active, .tab-btn:active {
+    color: var(--bat-black);
+}
+
+.glow-on-hover:active:after, .batman-button:active:after, .tab-btn:active:after {
+    background: transparent;
+}
+
+.glow-on-hover:hover:before, .batman-button:hover:before, .tab-btn:hover:before {
+    opacity: 1;
+}
+
+.glow-on-hover:after, .tab-btn:after {
+    z-index: -1;
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    left: 0;
+    top: 0;
+    border-radius: 10px;
+}
+
+/* Special handling for batman-button :after */
+.batman-button:after {
+    z-index: -1;
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    left: 0;
+    top: 0;
+}
+
+@keyframes glowing {
+    0% { background-position: 0 0; }
+    50% { background-position: 400% 0; }
+    100% { background-position: 0 0; }
+}
+
+/* Apply glow effect to batman-button */
+.batman-button {
+   position: relative;
+   width: 200px;
+   height: 73px;
+   padding: 0;
+   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' height='868' width='2500' viewBox='0 0 726 252.17'%3E%3Cpath d='M483.92 0S481.38 24.71 466 40.11c-11.74 11.74-24.09 12.66-40.26 15.07-9.42 1.41-29.7 3.77-34.81-.79-2.37-2.11-3-21-3.22-27.62-.21-6.92-1.36-16.52-2.82-18-.75 3.06-2.49 11.53-3.09 13.61S378.49 34.3 378 36a85.13 85.13 0 0 0-30.09 0c-.46-1.67-3.17-11.48-3.77-13.56s-2.34-10.55-3.09-13.61c-1.45 1.45-2.61 11.05-2.82 18-.21 6.67-.84 25.51-3.22 27.62-5.11 4.56-25.38 2.2-34.8.79-16.16-2.47-28.51-3.39-40.21-15.13C244.57 24.71 242 0 242 0H0s69.52 22.74 97.52 68.59c16.56 27.11 14.14 58.49 9.92 74.73C170 140 221.46 140 273 158.57c69.23 24.93 83.2 76.19 90 93.6 6.77-17.41 20.75-68.67 90-93.6 51.54-18.56 103-18.59 165.56-15.25-4.21-16.24-6.63-47.62 9.93-74.73C656.43 22.74 726 0 726 0z'/%3E%3C/svg%3E") no-repeat 50% 50%;
+   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' height='868' width='2500' viewBox='0 0 726 252.17'%3E%3Cpath d='M483.92 0S481.38 24.71 466 40.11c-11.74 11.74-24.09 12.66-40.26 15.07-9.42 1.41-29.7 3.77-34.81-.79-2.37-2.11-3-21-3.22-27.62-.21-6.92-1.36-16.52-2.82-18-.75 3.06-2.49 11.53-3.09 13.61S378.49 34.3 378 36a85.13 85.13 0 0 0-30.09 0c-.46-1.67-3.17-11.48-3.77-13.56s-2.34-10.55-3.09-13.61c-1.45 1.45-2.61 11.05-2.82 18-.21 6.67-.84 25.51-3.22 27.62-5.11 4.56-25.38 2.2-34.8.79-16.16-2.47-28.51-3.39-40.21-15.13C244.57 24.71 242 0 242 0H0s69.52 22.74 97.52 68.59c16.56 27.11 14.14 58.49 9.92 74.73C170 140 221.46 140 273 158.57c69.23 24.93 83.2 76.19 90 93.6 6.77-17.41 20.75-68.67 90-93.6 51.54-18.56 103-18.59 165.56-15.25-4.21-16.24-6.63-47.62 9.93-74.73C656.43 22.74 726 0 726 0z'/%3E%3C/svg%3E") no-repeat 50% 50%;
+   -webkit-mask-size: 100%;
+   mask-size: 100%;
+   background-color: var(--bat-yellow);
+   transform: translateY(8px);
+   margin: 10px auto;
+   display: block;
+   transition: all 0.3s ease-in-out;
+   overflow: visible;
+   box-shadow: 0 0 0 rgba(255, 204, 0, 0.5);
+}
+
+/* Batman button star elements */
+.batman-button .star-1,
+.batman-button .star-2,
+.batman-button .star-3,
+.batman-button .star-4,
+.batman-button .star-5,
+.batman-button .star-6 {
+  position: absolute;
+  width: 15px;
+  height: auto;
+  filter: drop-shadow(0 0 0 var(--bat-yellow));
+  z-index: -5;
+  transition: all 0.8s cubic-bezier(0.05, 0.83, 0.43, 0.96);
+  opacity: 0;
+}
+
+.batman-button .star-1 {
+  top: 20%;
+  left: 20%;
+}
+
+.batman-button .star-2 {
+  top: 45%;
+  left: 45%;
+  width: 10px;
+}
+
+.batman-button .star-3 {
+  top: 40%;
+  left: 40%;
+  width: 5px;
+}
+
+.batman-button .star-4 {
+  top: 20%;
+  left: 40%;
+  width: 8px;
+}
+
+.batman-button .star-5 {
+  top: 25%;
+  left: 45%;
+  width: 12px;
+}
+
+.batman-button .star-6 {
+  top: 5%;
+  left: 50%;
+  width: 5px;
+}
+
+.batman-button:hover {
+  box-shadow: 0 0 25px rgba(255, 204, 0, 0.5);
+}
+
+.batman-button:hover .star-1,
+.batman-button:hover .star-2,
+.batman-button:hover .star-3,
+.batman-button:hover .star-4,
+.batman-button:hover .star-5,
+.batman-button:hover .star-6 {
+  filter: drop-shadow(0 0 10px var(--bat-yellow));
+  z-index: 2;
+  opacity: 1;
+}
+
+.batman-button:hover .star-1 {
+  top: -80%;
+  left: -30%;
+}
+
+.batman-button:hover .star-2 {
+  top: -25%;
+  left: 10%;
+}
+
+.batman-button:hover .star-3 {
+  top: 55%;
+  left: 25%;
+}
+
+.batman-button:hover .star-4 {
+  top: 30%;
+  left: 80%;
+}
+
+.batman-button:hover .star-5 {
+  top: 25%;
+  left: 115%;
+}
+
+.batman-button:hover .star-6 {
+  top: 5%;
+  left: 60%;
+}
+
+.fil0 {
+  fill: var(--bat-yellow);
+}
+
+/* Special handling for batman button span */
+.batman-button span {
+   position: absolute;
+   width: 100%;
+   font-size: 15px;
+   font-weight: 700;
+   left: 50%;
+   top: 39%;
+   letter-spacing: 3px;
+   text-align: center;
+   transform: translate(-50%,-50%);
+   color: var(--bat-black);
+   transition: all 0.5s ease;
+   font-family: 'Oswald', sans-serif;
+   z-index: 2;
+   text-shadow: 0 0 2px rgba(255, 255, 255, 0.3);
+}
+
+.batman-button:hover span {
+   color: var(--bat-black);
+   text-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
+}
+
+/* Terminal Loader Animation */
+@keyframes blinkCursor {
+  50% {
+    border-right-color: transparent;
+  }
+}
+
+@keyframes typeAndDelete {
+  0%,
+  10% {
+    width: 0;
+  }
+  45%,
+  55% {
+    width: 16em;
+  } 
+  90%,
+  100% {
+    width: 0;
+  }
+}
+
+.terminal-loader {
+  border: 0.1em solid var(--bat-gray);
+  background-color: var(--bat-black);
+  color: var(--bat-yellow);
+  font-family: "Courier New", Courier, monospace;
+  font-size: 1em;
+  padding: 1.5em 1em;
+  width: 18em;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5), 0 0 15px rgba(255, 204, 0, 0.3);
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+  margin: 0 auto;
+}
+
+.terminal-loader::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+  z-index: 0;
+}
+
+.terminal-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1.5em;
+  background-color: var(--bat-gray);
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  padding: 0 0.4em;
+  box-sizing: border-box;
+  z-index: 2;
+}
+
+.terminal-controls {
+  float: right;
+}
+
+.control {
+  display: inline-block;
+  width: 0.6em;
+  height: 0.6em;
+  margin-left: 0.4em;
+  border-radius: 50%;
+  background-color: #777;
+}
+
+.control.close {
+  background-color: #e33;
+}
+
+.control.minimize {
+  background-color: var(--bat-yellow);
+}
+
+.control.maximize {
+  background-color: #0b0;
+}
+
+.terminal-title {
+  float: left;
+  line-height: 1.5em;
+  color: var(--bat-yellow);
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.terminal-text {
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  border-right: 0.2em solid var(--bat-yellow); /* Cursor */
+  animation:
+    typeAndDelete 4s steps(20) infinite,
+    blinkCursor 0.5s step-end infinite alternate;
+  margin-top: 1.5em;
+  position: relative;
+  z-index: 2;
+}
+
+/* Back to Top Button */
+.back-to-top {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: var(--bat-dark);
+  border: none;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0px 0px 0px 4px rgba(255, 204, 0, 0.25);
+  cursor: pointer;
+  transition-duration: 0.3s;
+  overflow: hidden;
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  z-index: 99;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(100px);
+  transition: all 0.5s ease;
+}
+
+.back-to-top.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.back-to-top .svgIcon {
+  width: 12px;
+  transition-duration: 0.3s;
+}
+
+.back-to-top .svgIcon path {
+  fill: var(--bat-yellow);
+}
+
+.back-to-top:hover {
+  width: 140px;
+  border-radius: 50px;
+  transition-duration: 0.3s;
+  background-color: var(--bat-black);
+  align-items: center;
+  box-shadow: 0px 0px 15px 4px rgba(255, 204, 0, 0.4);
+}
+
+.back-to-top:hover .svgIcon {
+  transition-duration: 0.3s;
+  transform: translateY(-200%);
+}
+
+.back-to-top::before {
+  position: absolute;
+  bottom: -20px;
+  content: "BACK TO TOP";
+  color: var(--bat-yellow);
+  font-size: 0px;
+  font-family: 'Oswald', sans-serif;
+  letter-spacing: 1px;
+}
+
+.back-to-top:hover::before {
+  font-size: 13px;
+  opacity: 1;
+  bottom: unset;
+  transition-duration: 0.3s;
+}
+
+/* Animated Telegram Button */
+.animated-button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 16px 36px;
+  border: 4px solid;
+  border-color: transparent;
+  font-size: 16px;
+  background-color: inherit;
+  border-radius: 100px;
+  font-weight: 600;
+  color: var(--bat-yellow);
+  box-shadow: 0 0 0 2px var(--bat-yellow);
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  font-family: 'Oswald', sans-serif;
+  text-decoration: none;
+  margin: 20px auto;
+  max-width: 300px;
+  text-align: center;
+}
+
+.animated-button svg {
+  position: absolute;
+  width: 24px;
+  fill: var(--bat-yellow);
+  z-index: 9;
+  transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.animated-button .arr-1 {
+  right: 16px;
+}
+
+.animated-button .arr-2 {
+  left: -25%;
+}
+
+.animated-button .circle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 20px;
+  height: 20px;
+  background-color: var(--bat-yellow);
+  border-radius: 50%;
+  opacity: 0;
+  transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.animated-button .text {
+  position: relative;
+  z-index: 1;
+  transform: translateX(-12px);
+  transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.animated-button:hover {
+  box-shadow: 0 0 0 12px transparent;
+  color: var(--bat-black);
+  border-radius: 12px;
+}
+
+.animated-button:hover .arr-1 {
+  right: -25%;
+}
+
+.animated-button:hover .arr-2 {
+  left: 16px;
+}
+
+.animated-button:hover .text {
+  transform: translateX(12px);
+}
+
+.animated-button:hover svg {
+  fill: var(--bat-black);
+}
+
+.animated-button:active {
+  scale: 0.95;
+  box-shadow: 0 0 0 4px var(--bat-yellow);
+}
+
+.animated-button:hover .circle {
+  width: 220px;
+  height: 220px;
+  opacity: 1;
+}
+
+.telegram-container {
+  display: flex;
+  justify-content: center;
+  margin: 30px 0;
+}
+
+.telegram-info {
+  text-align: center;
+  color: var(--bat-light-gray);
+  font-size: 0.9rem;
+  margin-top: 10px;
+}
+
+.telegram-info a {
+  color: var(--bat-yellow);
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.telegram-info a:hover {
+  color: var(--bat-gold);
+  text-decoration: underline;
+}
+
+/* Social Media Links Styling */
+.result-card a {
+    color: var(--bat-yellow);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    display: inline-block;
+    padding: 4px 8px;
+    background-color: rgba(255, 204, 0, 0.1);
+    border-radius: 4px;
+    margin: 2px 0;
+    border-left: 2px solid var(--bat-yellow);
+}
+
+.result-card a:hover {
+    color: var(--bat-white);
+    background-color: rgba(255, 204, 0, 0.2);
+    text-decoration: underline;
+    transform: translateX(4px);
+}
+
+.result-card li {
+    margin-bottom: 8px;
+    list-style-type: none;
+}
+
+.result-card ul {
+    padding-left: 10px;
+}
+
+/* Copy Button Styles */
+.copy-btn {
+  width: 90px;
+  height: 35px;
+  background-color: rgb(65, 64, 64);
+  border: none;
+  box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.342);
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  position: relative;
+  overflow: hidden;
+  transition-duration: .5s;
+  float: right;
+  margin: 5px;
+  font-size: 0.8rem;
+}
+
+.copy-btn .text {
+  color: var(--bat-yellow);
+  font-weight: 800;
+  letter-spacing: 1px;
+  z-index: 2;
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+.copy-btn .svgIcon {
+  z-index: 2;
+  height: 0.9em;
+}
+
+.copy-btn .svgIcon path {
+  fill: var(--bat-yellow);
+}
+
+.copy-btn:hover {
+  color: rgb(230, 255, 193);
+}
+
+.copy-btn .effect {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background-color: var(--bat-yellow);
+  border-radius: 50%;
+  z-index: 1;
+  opacity: 0;
+  transition-duration: .5s;
+}
+
+.copy-btn:hover .effect {
+  transform: scale(15);
+  transform-origin: center;
+  opacity: 1;
+  transition-duration: .5s;
+}
+
+.copy-btn:hover {
+  box-shadow: 0px 0px 5px var(--bat-yellow),
+  0px 0px 10px var(--bat-yellow),
+  0px 0px 30px var(--bat-yellow);
+  transition-duration: .7s;
+}
+
+.copy-btn:hover .text {
+  color: rgb(65, 64, 64);
+}
+
+.copy-btn:hover .svgIcon path {
+  fill: rgb(65, 64, 64);
+} 

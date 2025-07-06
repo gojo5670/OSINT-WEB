@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BatInfo - Dark Knight Intelligence System</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs" type="module"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <dotlottie-player src="https://lottie.host/a360bb4b-8828-4127-b139-7e8c6854dda3/jD1PcDcdj5.lottie" background="transparent" speed="1" style="width: 150px; height: 150px" loop autoplay></dotlottie-player>
+            </div>
+            <h1>BATINFO</h1>
+            <p>Dark Knight Intelligence System</p>
+        </header>
+
+        <div class="search-container">
+            <div class="search-tabs">
+                <button class="tab-btn active" data-tab="mobile">Mobile Search <i class="fas fa-mobile-alt"></i></button>
+                <button class="tab-btn" data-tab="aadhar">Aadhar Search <i class="fas fa-id-card"></i></button>
+                <button class="tab-btn" data-tab="social">Social Media <i class="fas fa-globe"></i></button>
+                <button class="tab-btn" data-tab="age">Age Check <i class="fas fa-user-clock"></i></button>
+                <button class="tab-btn" data-tab="pan">PAN Details <i class="fas fa-credit-card"></i></button>
+                <button class="tab-btn" data-tab="rc">RC to Phone <i class="fas fa-car"></i></button>
+                <button class="tab-btn" data-tab="voter">Voter Details <i class="fas fa-vote-yea"></i></button>
+                <button class="tab-btn" data-tab="password-leak">Password Leaks <i class="fas fa-unlock-alt"></i></button>
+            </div>
+
+            <div class="search-content">
+                <!-- Mobile Search Tab -->
+                <div class="tab-content active" id="mobile-tab">
+                    <h2>Mobile Number Search</h2>
+                    <p>Enter a 10-digit mobile number to search for information.</p>
+                    <div class="search-form">
+                        <input type="text" id="mobile-input" placeholder="Enter 10-digit mobile number" maxlength="10">
+                        <button id="mobile-search-btn" class="batman-button">
+                            <span>SEARCH</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Aadhar Search Tab -->
+                <div class="tab-content" id="aadhar-tab">
+                    <h2>Aadhar Number Search</h2>
+                    <p>Enter a 12-digit Aadhar number to search for information.</p>
+                    <div class="search-form">
+                        <input type="text" id="aadhar-input" placeholder="Enter 12-digit Aadhar number" maxlength="12">
+                        <button id="aadhar-search-btn" class="batman-button">
+                            <span>SEARCH</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Social Media Search Tab -->
+                <div class="tab-content" id="social-tab">
+                    <h2>Social Media Search</h2>
+                    <p>Enter a username or person name to find social media profiles.</p>
+                    <div class="search-form">
+                        <input type="text" id="social-input" placeholder="Enter username or person name">
+                        <button id="social-search-btn" class="batman-button">
+                            <span>SEARCH</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Age Check Tab -->
+                <div class="tab-content" id="age-tab">
+                    <h2>Aadhar Age Check</h2>
+                    <p>Get age range information from an Aadhar number.</p>
+                    <div class="search-form">
+                        <input type="text" id="age-input" placeholder="Enter 12-digit Aadhar number" maxlength="12">
+                        <button id="age-search-btn" class="batman-button">
+                            <span>CHECK AGE</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- PAN Details Tab -->
+                <div class="tab-content" id="pan-tab">
+                    <h2>PAN Details from Aadhar</h2>
+                    <p>Get PAN card details using an Aadhar number.</p>
+                    <div class="search-form">
+                        <input type="text" id="pan-aadhar-input" placeholder="Enter 12-digit Aadhar number" maxlength="12">
+                        <input type="password" id="pan-api-key" placeholder="Enter your Special Key 🔑">
+                        <button id="pan-search-btn" class="batman-button">
+                            <span>GET PAN</span>
+                        </button>
+                    </div>
+                    
+                    <div class="telegram-container">
+                        <a href="https://t.me/icodeinbinary" target="_blank" class="animated-button">
+                            <svg viewBox="0 0 24 24" class="arr-2" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"></path>
+                            </svg>
+                            <span class="text">GET SPECIAL KEY</span>
+                            <span class="circle"></span>
+                            <svg viewBox="0 0 24 24" class="arr-1" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"></path>
+                            </svg>
+                        </a>
+                    </div>
+                    <p class="telegram-info">Contact on Telegram for your Special Key: <a href="https://t.me/icodeinbinary" target="_blank">@icodeinbinary</a></p>
+                </div>
+
+                <!-- RC to Phone Number Tab -->
+                <div class="tab-content" id="rc-tab">
+                    <h2>RC to Phone Number</h2>
+                    <p>Get vehicle and owner details including phone number using RC number.</p>
+                    <div class="search-form">
+                        <input type="text" id="rc-input" placeholder="Enter RC number (e.g., HR26EV0001)" maxlength="15">
+                        <input type="password" id="rc-api-key" placeholder="Enter your Special Key 🔑">
+                        <button id="rc-search-btn" class="batman-button">
+                            <span>GET DETAILS</span>
+                        </button>
+                    </div>
+                    
+                    <div class="telegram-container">
+                        <a href="https://t.me/icodeinbinary" target="_blank" class="animated-button">
+                            <svg viewBox="0 0 24 24" class="arr-2" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"></path>
+                            </svg>
+                            <span class="text">GET SPECIAL KEY</span>
+                            <span class="circle"></span>
+                            <svg viewBox="0 0 24 24" class="arr-1" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"></path>
+                            </svg>
+                        </a>
+                    </div>
+                    <p class="telegram-info">Contact on Telegram for your Special Key: <a href="https://t.me/icodeinbinary" target="_blank">@icodeinbinary</a></p>
+                </div>
+
+                <!-- Voter Card Details Tab -->
+                <div class="tab-content" id="voter-tab">
+                    <h2>Voter Card Details</h2>
+                    <p>Get voter information using EPIC/Voter ID number.</p>
+                    <div class="search-form">
+                        <input type="text" id="voter-input" placeholder="Enter Voter ID (e.g., UHH4725875)" maxlength="15">
+                        <input type="password" id="voter-api-key" placeholder="Enter your Special Key 🔑">
+                        <button id="voter-search-btn" class="batman-button">
+                            <span>GET DETAILS</span>
+                        </button>
+                    </div>
+                    
+                    <div class="telegram-container">
+                        <a href="https://t.me/icodeinbinary" target="_blank" class="animated-button">
+                            <svg viewBox="0 0 24 24" class="arr-2" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"></path>
+                            </svg>
+                            <span class="text">GET SPECIAL KEY</span>
+                            <span class="circle"></span>
+                            <svg viewBox="0 0 24 24" class="arr-1" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"></path>
+                            </svg>
+                        </a>
+                    </div>
+                    <p class="telegram-info">Contact on Telegram for your Special Key: <a href="https://t.me/icodeinbinary" target="_blank">@icodeinbinary</a></p>
+                </div>
+
+                <!-- Password Leak Checker Tab -->
+                <div class="tab-content" id="password-leak-tab">
+                    <h2>Password Leak Checker</h2>
+                    <p>Check if your email has been involved in data breaches and if your passwords have been leaked.</p>
+                    <div class="search-form">
+                        <input type="email" id="password-leak-input" placeholder="Enter email address">
+                        <input type="password" id="password-leak-api-key" placeholder="Enter your Special Key 🔑">
+                        <button id="password-leak-btn" class="batman-button">
+                            <span>CHECK LEAKS</span>
+                        </button>
+                    </div>
+                    
+                    <div class="telegram-container">
+                        <a href="https://t.me/icodeinbinary" target="_blank" class="animated-button">
+                            <svg viewBox="0 0 24 24" class="arr-2" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"></path>
+                            </svg>
+                            <span class="text">GET SPECIAL KEY</span>
+                            <span class="circle"></span>
+                            <svg viewBox="0 0 24 24" class="arr-1" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"></path>
+                            </svg>
+                        </a>
+                    </div>
+                    <p class="telegram-info">Contact on Telegram for your Special Key: <a href="https://t.me/icodeinbinary" target="_blank">@icodeinbinary</a></p>
+                    
+                    <div class="warning-message">
+                        <h3>⚠️ PRIVACY NOTICE</h3>
+                        <p>This tool checks if your email appears in known data breaches. Your data is handled securely and not stored.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="results-container">
+            <h2>RESULTS
+                <button class="copy-btn" id="copy-results-btn">
+                    <svg viewBox="0 0 512 512" class="svgIcon" height="1em"><path d="M288 448H64V224h64V160H64c-35.3 0-64 28.7-64 64V448c0 35.3 28.7 64 64 64H288c35.3 0 64-28.7 64-64V384H288v64zm-64-96H448c35.3 0 64-28.7 64-64V64c0-35.3-28.7-64-64-64H224c-35.3 0-64 28.7-64 64V288c0 35.3 28.7 64 64 64z"></path></svg>
+                    <p class="text">COPY</p>
+                    <span class="effect"></span>
+                </button>
+            </h2>
+            <div id="loading" class="hidden">
+                <div class="terminal-loader">
+                    <div class="terminal-header">
+                        <div class="terminal-title">BATCOMPUTER</div>
+                        <div class="terminal-controls">
+                            <div class="control close"></div>
+                            <div class="control minimize"></div>
+                            <div class="control maximize"></div>
+                        </div>
+                    </div>
+                    <div class="terminal-text">Accessing Batcomputer...</div>
+                </div>
+            </div>
+            <div id="results"></div>
+        </div>
+
+        <footer>
+            <div class="footer-content">
+                <p>Developed by <a href="#" target="_blank">@icodeinbinary</a></p>
+                <p class="disclaimer">This tool is for educational purposes only. Use responsibly and legally.</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Modal for displaying information -->
+    <div id="info-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div class="modal-header">
+                <dotlottie-player src="https://lottie.host/a360bb4b-8828-4127-b139-7e8c6854dda3/jD1PcDcdj5.lottie" background="transparent" speed="1" style="width: 60px; height: 60px" loop autoplay></dotlottie-player>
+                <h2>BATINFO MANUAL</h2>
+            </div>
+            <ul>
+                <li><strong>Mobile Search</strong> - Search by 10-digit mobile number</li>
+                <li><strong>Aadhar Search</strong> - Search by 12-digit Aadhar number</li>
+                <li><strong>Social Media Search</strong> - Find social profiles by name/username</li>
+                <li><strong>Age Check</strong> - Get age range from Aadhar number</li>
+                <li><strong>PAN Details</strong> - Get PAN details from Aadhar number</li>
+                <li><strong>RC to Phone</strong> - Get vehicle owner details and phone number from RC number</li>
+                <li><strong>Voter Details</strong> - Get voter information using EPIC/Voter ID number</li>
+                <li><strong>Password Leaks</strong> - Check if your email and passwords have been leaked in data breaches</li>
+            </ul>
+            <p>For PAN Details, RC to Phone, Voter Details, and Password Leaks, you'll need a special API key which you can get by contacting @icodeinbinary on telegram</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="simple-ribbon.js"></script>
+    <script src="batman-cursor.js"></script>
+    <script src="components/lightning-vanilla.js"></script>
+    <script src="star-effects.js"></script>
+    <script src="copy-results.js"></script>
+    
+    <!-- Back to Top Button -->
+    <button class="back-to-top" id="backToTopBtn">
+        <svg class="svgIcon" viewBox="0 0 384 512">
+            <path d="M214.6 41.4c-12.5-12.5-32.8-12.5-45.3 0l-160 160c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L160 141.2V448c0 17.7 14.3 32 32 32s32-14.3 32-32V141.2L329.4 246.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-160-160z"></path>
+        </svg>
+    </button>
+</body>
+</html> 
