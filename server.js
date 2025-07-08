@@ -372,48 +372,50 @@ app.get('/api/password-leak', async (req, res) => {
     
     console.log(`Processing Password Leak check for: ${email}`);
     
+    // Using the new API endpoint
     const response = await axios.get(
-      'https://breachdirectory.p.rapidapi.com/',
-      {
-        params: {
-          func: "auto",
-          term: email
-        },
-        headers: {
-          'x-rapidapi-key': req.headers['x-rapidapi-key'],
-          'x-rapidapi-host': 'breachdirectory.p.rapidapi.com'
-        }
-      }
+      `https://emailbreachcheck-api-v1.webportspy.workers.dev/breaches/email/${encodeURIComponent(email)}`
     );
     
     // Log the response for debugging
     console.log('Password Leak API Response:', {
       status: response.status,
       hasData: !!response.data,
-      dataKeys: response.data ? Object.keys(response.data) : null
+      dataKeys: response.data ? Object.keys(response.data) : null,
+      responseBody: JSON.stringify(response.data).substring(0, 200)
     });
     
-    if (response.data && response.data.success) {
-      // Create a simplified response with only the required fields
-      const simplifiedResults = response.data.result.map(item => ({
-        email: item.email || email,
-        password: item.password || "No password found",
-        sources: item.sources || "Unknown source"
-      }));
-      
-      const simplifiedResponse = {
-        status: "success",
-        found: response.data.found || 0,
-        results: simplifiedResults
-      };
-      
-      res.json(simplifiedResponse);
-    } else {
-      res.status(404).json({ 
-        error: 'No leak data found', 
-        message: 'No data available for this email'
-      });
-    }
+    // FIXED: Properly check for breaches and handle the response
+    const breaches = response.data && response.data.breaches ? response.data.breaches : [];
+    
+    // Make sure breaches is always an array and filter out "Collection #1" which appears to be a glitch
+    const breachesArray = Array.isArray(breaches) 
+      ? breaches.filter(breach => breach.Name !== "Collection #1") 
+      : [];
+    
+    console.log(`Filtered out Collection #1 breach. Original: ${breaches.length}, After filter: ${breachesArray.length}`);
+    
+    // Create the response object
+    const simplifiedResults = breachesArray.map(breach => ({
+      email: email,
+      password: "Password not available", // API doesn't provide actual passwords
+      sources: breach.Name || breach.Domain || "Unknown source",
+      breach_date: breach.BreachDate || "Unknown date",
+      description: breach.Description || "",
+      data_classes: (breach.DataClasses || []).join(", ")
+    }));
+    
+    const simplifiedResponse = {
+      status: "success",
+      found: breachesArray.length,
+      results: simplifiedResults
+    };
+    
+    console.log('Sending breach response. Found:', breachesArray.length);
+    
+    // Always return status 200 with the appropriate data
+    res.json(simplifiedResponse);
+    
   } catch (error) {
     console.error('Error proxying Password Leak check:', error.message);
     res.status(500).json({ error: 'Failed to fetch data', message: error.message });

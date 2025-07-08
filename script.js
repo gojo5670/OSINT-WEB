@@ -218,7 +218,18 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             const data = await response.json();
-            console.log('Response data:', data);
+            
+            // Enhanced logging for password leak endpoint
+            if (url.includes('/api/password-leak')) {
+                console.log('Password Leak API Response Data:', {
+                    status: data.status,
+                    found: data.found,
+                    resultsLength: data.results?.length,
+                    fullData: JSON.stringify(data).substring(0, 500)
+                });
+            } else {
+                console.log('Response data:', data);
+            }
             
             // Check for error messages in the response
             if (data && data.error) {
@@ -731,36 +742,30 @@ document.addEventListener('DOMContentLoaded', function() {
     // Password Leak Checker functionality
     document.getElementById('password-leak-btn').addEventListener('click', async function() {
         const email = document.getElementById('password-leak-input').value.trim();
-        const apiKey = document.getElementById('password-leak-api-key').value.trim();
         
         if (!email || !isValidEmail(email)) {
             showError('Please enter a valid email address.');
             return;
         }
         
-        if (!apiKey) {
-            showError('Please enter your Special Key for the Password Leak API.');
-            return;
-        }
+        // No longer need API key with the new endpoint
         
         showLoading();
         
         try {
-            const options = {
-                method: 'GET',
-                headers: {
-                    'x-rapidapi-key': apiKey
-                }
-            };
-            
-            const data = await fetchData(`${API_ENDPOINTS.PASSWORD_LEAK}?email=${encodeURIComponent(email)}`, options);
+            const data = await fetchData(`${API_ENDPOINTS.PASSWORD_LEAK}?email=${encodeURIComponent(email)}`);
+            console.log('Password leak check - results received:', {
+                status: data.status,
+                found: data.found,
+                hasResults: !!(data.results && data.results.length)
+            });
             
             if (data.status === 'success') {
                 let resultsHtml = `
                     <div class="success-message">
                         <h3>🔍 PASSWORD LEAK CHECK RESULTS</h3>
                         <p><strong>Email:</strong> ${email}</p>
-                        <p><strong>Leaks Found:</strong> ${data.found}</p>
+                        <p><strong>Breaches Found:</strong> ${data.found}</p>
                     </div>
                 `;
                 
@@ -768,10 +773,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     data.results.forEach((leak, index) => {
                         resultsHtml += `
                             <div class="result-card">
-                                <h3>LEAK #${index + 1}</h3>
+                                <h3>BREACH #${index + 1}</h3>
                                 <p><strong>📧 Email:</strong> ${leak.email}</p>
-                                <p><strong>🔑 Password:</strong> <span class="copyable" onclick="copyToClipboard(this)">${leak.password}</span></p>
                                 <p><strong>🔍 Source:</strong> ${leak.sources}</p>
+                                ${leak.breach_date ? `<p><strong>📅 Date:</strong> ${leak.breach_date}</p>` : ''}
+                                ${leak.description ? `<p><strong>📝 Description:</strong> ${leak.description}</p>` : ''}
+                                ${leak.data_classes ? `<p><strong>🔒 Exposed Data:</strong> ${leak.data_classes}</p>` : ''}
                             </div>
                         `;
                     });
@@ -787,8 +794,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     resultsHtml += `
                         <div class="success-message" style="background-color: rgba(46, 125, 50, 0.2); color: #81c784;">
                             <h3>✅ GOOD NEWS</h3>
-                            <p>No password leaks were found for this email address.</p>
-                            <p>Continue to practice good security habits to keep your accounts safe.</p>
+                            <p>No significant data breaches were found for this email address.</p>
+                            <p>Continue to practice good security habits to keep your accounts safe:</p>
+                            <ul>
+                                <li>Use unique passwords for each service</li>
+                                <li>Enable two-factor authentication when available</li>                                
+                            </ul>
                         </div>
                     `;
                 }
@@ -800,13 +811,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         } catch (error) {
             const errorStr = error.message;
-            
-            // Check if the error is related to quota exceeded
-            if (errorStr.toLowerCase().includes('quota') || errorStr.toLowerCase().includes('exceeded')) {
-                showError('SPECIAL KEY EXPIRED💀');
-            } else {
-                showError(`ERROR: ${errorStr}`);
-            }
+            showError(`ERROR: ${errorStr}`);
         } finally {
             hideLoading();
         }
