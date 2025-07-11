@@ -1194,5 +1194,42 @@ footer a:hover {
 }
 
 .copy-btn:hover .svgIcon path {
-  fill: rgb(65, 64, 64);
+    fill: var(--bat-black);
+}
+
+/* Copy tooltip styles */
+.copyable {
+    position: relative;
+    cursor: pointer !important;
+}
+
+.copyable:hover {
+    color: var(--bat-yellow);
+    text-decoration: underline;
+}
+
+.copyable.copied {
+    color: var(--bat-yellow);
+}
+
+.copy-tooltip {
+    position: absolute;
+    background-color: var(--bat-yellow);
+    color: var(--bat-black);
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 3px;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    animation: fadeInOut 2s ease-in-out;
+    z-index: 100;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; }
+    20% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { opacity: 0; }
 } 

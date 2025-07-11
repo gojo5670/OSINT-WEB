@@ -1,0 +1,46 @@
+API CONFIGURATION URLS
+=====================
+
+This file contains all the API URLs used in the application.
+For programmatic use, please update api-config.js instead.
+This file is for reference only.
+
+BASE URLS
+---------
+
+MOBILE_SEARCH_API: https://presents-specialties-mention-simpson.trycloudflare.com/search
+AADHAR_SEARCH_API: https://presents-specialties-mention-simpson.trycloudflare.com/search
+AADHAAR_AGE_API: https://kyc-api.aadhaarkyc.io/api/v1/aadhaar-validation/aadhaar-validation
+AADHAAR_TO_PAN_API: https://aadhaar-to-full-pan.p.rapidapi.com/Aadhaar_to_pan
+SOCIAL_LINKS_API: https://social-links-search.p.rapidapi.com/search-social-links
+RC_DETAILS_API: https://vehicle-rc-verification-advance.p.rapidapi.com/Getrcfulldetails
+RC_PHONE_API: https://vehicle-rc-verification2.p.rapidapi.com/vehicle
+VOTER_DETAILS_API: https://voter-card-verification.p.rapidapi.com/Getvoterfulldetails
+PASSWORD_LEAK_API: https://emailbreachcheck-api-v1.webportspy.workers.dev/breaches/email
+
+NEW APIS
+--------
+
+FAMPAY_TO_PHONE_API: https://glonova.in/Oqoqooqoq-NG.php
+UPI_DETAILS_API: https://glonova.in/Oqoqooqoq-NG.php
+IFSC_DETAILS_API: https://ifsc.razorpay.com
+
+USAGE EXAMPLES
+-------------
+
+1. Mobile Search:
+   URL: https://presents-specialties-mention-simpson.trycloudflare.com/search?key=bhanu&mobile=1234567890
+
+2. Aadhar Search:
+   URL: https://presents-specialties-mention-simpson.trycloudflare.com/search?key=bhanu&aadhar=123456789012
+
+3. FamPay to Phone:
+   URL: https://glonova.in/Oqoqooqoq-NG.php/?ng=username@fam
+
+4. UPI to IFSC:
+   Step 1: https://glonova.in/Oqoqooqoq-NG.php/?ng=username@sbi
+   Step 2: https://ifsc.razorpay.com/SBIN0012560
+
+To update any API URL:
+1. Edit this file for reference
+2. Update the corresponding URL in api-config.js 

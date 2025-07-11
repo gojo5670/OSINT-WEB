@@ -1,3 +1,62 @@
+// Function to copy specific text to clipboard when clicked
+function copyToClipboard(element) {
+    const textToCopy = element.textContent;
+    
+    navigator.clipboard.writeText(textToCopy)
+        .then(() => {
+            // Add a temporary "copied" class to the element
+            element.classList.add('copied');
+            
+            // Show a small tooltip
+            const tooltip = document.createElement('span');
+            tooltip.className = 'copy-tooltip';
+            tooltip.textContent = 'Copied!';
+            element.appendChild(tooltip);
+            
+            // Remove the class and tooltip after a short delay
+            setTimeout(() => {
+                element.classList.remove('copied');
+                if (tooltip.parentNode === element) {
+                    element.removeChild(tooltip);
+                }
+            }, 2000);
+        })
+        .catch(err => {
+            console.error('Failed to copy: ', err);
+            
+            // Fallback method
+            const textarea = document.createElement('textarea');
+            textarea.value = textToCopy;
+            document.body.appendChild(textarea);
+            textarea.select();
+            
+            try {
+                document.execCommand('copy');
+                
+                // Add a temporary "copied" class to the element
+                element.classList.add('copied');
+                
+                // Show a small tooltip
+                const tooltip = document.createElement('span');
+                tooltip.className = 'copy-tooltip';
+                tooltip.textContent = 'Copied!';
+                element.appendChild(tooltip);
+                
+                // Remove the class and tooltip after a short delay
+                setTimeout(() => {
+                    element.classList.remove('copied');
+                    if (tooltip.parentNode === element) {
+                        element.removeChild(tooltip);
+                    }
+                }, 2000);
+            } catch (err) {
+                console.error('Fallback copy method failed: ', err);
+            }
+            
+            document.body.removeChild(textarea);
+        });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // API endpoints - Updated to use our local proxy server
     const API_ENDPOINTS = {
@@ -8,7 +67,9 @@ document.addEventListener('DOMContentLoaded', function() {
         SOCIAL_LINKS: "/api/social",
         RC_TO_PHONE: "/api/rc",
         VOTER_DETAILS: "/api/voter",
-        PASSWORD_LEAK: "/api/password-leak"
+        PASSWORD_LEAK: "/api/password-leak",
+        FAMPAY_TO_PHONE: "/api/fampay",
+        UPI_TO_IFSC: "/api/upi-ifsc"
     };
 
     // API Keys
@@ -819,27 +880,39 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Helper function to validate email
     function isValidEmail(email) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
+        const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        return re.test(String(email).toLowerCase());
     }
 
-    // Function to copy text to clipboard
-    window.copyToClipboard = function(element) {
-        const text = element.textContent;
-        navigator.clipboard.writeText(text).then(() => {
-            // Visual feedback for copy
-            const originalBackground = element.style.backgroundColor;
-            element.style.backgroundColor = '#ffcc00';
-            element.style.color = '#0a0e14';
-            
-            setTimeout(() => {
-                element.style.backgroundColor = originalBackground;
-                element.style.color = '';
-            }, 500);
-        }).catch(err => {
-            console.error('Failed to copy text: ', err);
-        });
-    };
+    // Helper function to parse name field from API response
+    function parseNameField(nameStr) {
+        if (!nameStr) return 'Unknown';
+        
+        // If it looks like a JSON array string
+        if (nameStr.startsWith('[') && (nameStr.includes(',') || nameStr.includes('"'))) {
+            try {
+                // Try to parse it as JSON
+                const parsedName = JSON.parse(nameStr);
+                if (Array.isArray(parsedName) && parsedName.length > 0) {
+                    return parsedName[0];
+                }
+            } catch (e) {
+                // If parsing fails, just clean up the string manually
+                // Remove brackets, quotes, and get the first item before any comma
+                return nameStr.replace(/[\[\]"\\]/g, '').split(',')[0].trim();
+            }
+        }
+        
+        return nameStr;
+    }
+    
+    // Helper function to parse extra info field from API response
+    function parseExtraField(extraStr) {
+        if (!extraStr) return '';
+        
+        // Remove any brackets, quotes, and backslashes
+        return extraStr.replace(/[\[\]"\\]/g, '').trim();
+    }
 
     // Input validation for mobile number (only digits)
     document.getElementById('mobile-input').addEventListener('input', function() {
@@ -869,7 +942,194 @@ document.addEventListener('DOMContentLoaded', function() {
         this.value = this.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
     });
     
-    // Back to Top button functionality
+    // Copy button functionality
+    document.getElementById('copy-results-btn').addEventListener('click', function() {
+        const resultsContainer = document.getElementById('results');
+        
+        if (!resultsContainer || !resultsContainer.textContent.trim()) {
+            return;
+        }
+        
+        // Extract all text content from the results
+        let textToCopy = '';
+        
+        // Get all result cards or content
+        const resultCards = resultsContainer.querySelectorAll('.result-card');
+        
+        if (resultCards.length > 0) {
+            resultCards.forEach(card => {
+                // Get all text content from the card, excluding buttons
+                const cardText = Array.from(card.childNodes)
+                    .filter(node => node.nodeType === Node.TEXT_NODE || 
+                            (node.nodeType === Node.ELEMENT_NODE && 
+                             !node.classList.contains('copy-btn')))
+                    .map(node => node.textContent)
+                    .join('\n')
+                    .trim();
+                
+                textToCopy += cardText + '\n\n';
+            });
+        } else {
+            // If no result cards, get all text content
+            textToCopy = resultsContainer.textContent.trim();
+        }
+        
+        // Copy the text to clipboard
+        navigator.clipboard.writeText(textToCopy)
+            .then(() => {
+                showCopyMessage('Results copied!', true);
+            })
+            .catch(err => {
+                showCopyMessage('Failed to copy results!', false);
+                console.error('Failed to copy: ', err);
+                
+                // Fallback method if clipboard API fails
+                const textarea = document.createElement('textarea');
+                textarea.value = textToCopy;
+                document.body.appendChild(textarea);
+                textarea.select();
+                
+                try {
+                    const successful = document.execCommand('copy');
+                    showCopyMessage(successful ? 'Results copied!' : 'Failed to copy results.', successful);
+                } catch (err) {
+                    showCopyMessage('Error copying results: ' + err, false);
+                }
+                
+                document.body.removeChild(textarea);
+            });
+    });
+
+    // FamPay to Phone Number functionality
+    document.getElementById('fampay-search-btn').addEventListener('click', async function() {
+        const upiId = document.getElementById('fampay-input').value.trim();
+        
+        if (!upiId) {
+            showError('Please enter a FamPay UPI ID.');
+            return;
+        }
+        
+        // Check if it's a FamPay UPI ID
+        if (!upiId.toLowerCase().endsWith('@fam')) {
+            showError('Please enter a valid FamPay UPI ID ending with @fam.');
+            return;
+        }
+        
+        showLoading();
+        
+        try {
+            const apiUrl = `${API_ENDPOINTS.FAMPAY_TO_PHONE}?upi=${encodeURIComponent(upiId)}`;
+            const data = await fetchData(apiUrl);
+            
+            if (data && data.status === 'success') {
+                // Parse the name field using the helper function
+                const name = parseNameField(data.name);
+                
+                // Format the phone number
+                const phoneNumber = data.phone_number || 'N/A';
+                
+                // Parse the extra field
+                const extraInfo = parseExtraField(data.extra);
+                
+                // Create the result HTML
+                const resultsHtml = `
+                    <div class="success-message">BATCOMPUTER FOUND DETAILS FOR UPI: ${upiId}</div>
+                    <div class="result-card">
+                        <h3>FAMPAY UPI DETAILS</h3>
+                        <p><strong>👤 Name:</strong> ${name}</p>
+                        <p><strong>📱 Phone Number:</strong> <span class="copyable" onclick="copyToClipboard(this)">${phoneNumber}</span></p>
+                        <p><strong>🆔 UPI ID:</strong> <span class="copyable" onclick="copyToClipboard(this)">${upiId}</span></p>
+                        <p><strong>🔄 Type:</strong> ${data.type || 'UPI'}</p>
+                        ${extraInfo ? `<p><strong>ℹ️ Extra Info:</strong> ${extraInfo}</p>` : ''}
+                    </div>
+                `;
+                
+                showResults(resultsHtml);
+            } else {
+                showError(`BATCOMPUTER FOUND NO INFORMATION FOR THIS FAMPAY UPI ID.`);
+            }
+        } catch (error) {
+            showError(`ERROR: ${error.message}`);
+        } finally {
+            hideLoading();
+        }
+    });
+
+    // UPI DETAILS Details functionality
+    document.getElementById('upi-ifsc-search-btn').addEventListener('click', async function() {
+        const upiId = document.getElementById('upi-ifsc-input').value.trim();
+        
+        if (!upiId) {
+            showError('Please enter a UPI ID.');
+            return;
+        }
+        
+        // Check if it's not a FamPay UPI ID
+        if (upiId.toLowerCase().endsWith('@fam')) {
+            showError('For FamPay UPI IDs, please use the FamPay to Phone tab.');
+            return;
+        }
+        
+        showLoading();
+        
+        try {
+            const apiUrl = `${API_ENDPOINTS.UPI_TO_IFSC}?upi=${encodeURIComponent(upiId)}`;
+            const data = await fetchData(apiUrl);
+            
+            if (data && data.status === 'success') {
+                // Parse the name field using the helper function
+                const name = parseNameField(data.upi_details.name);
+                
+                // Parse the extra field if it exists
+                const extraInfo = data.upi_details.extra ? parseExtraField(data.upi_details.extra) : '';
+                
+                // Get bank details
+                const bankDetails = data.bank_details || {};
+                
+                // Create the result HTML
+                let resultsHtml = `
+                    <div class="success-message">BATCOMPUTER FOUND BANK DETAILS FOR UPI: ${upiId}</div>
+                    <div class="result-card">
+                        <h3>UPI ACCOUNT HOLDER</h3>
+                        <p><strong>👤 Name:</strong> ${name}</p>
+                        <p><strong>🆔 UPI ID:</strong> <span class="copyable" onclick="copyToClipboard(this)">${upiId}</span></p>
+                        ${extraInfo ? `<p><strong>ℹ️ Extra Info:</strong> ${extraInfo}</p>` : ''}
+                    </div>
+                `;
+                
+                if (Object.keys(bankDetails).length > 0) {
+                    resultsHtml += `
+                        <div class="result-card">
+                            <h3>BANK DETAILS</h3>
+                            <p><strong>🏦 Bank:</strong> ${bankDetails.BANK || 'N/A'}</p>
+                            <p><strong>🔢 IFSC:</strong> <span class="copyable" onclick="copyToClipboard(this)">${bankDetails.IFSC || 'N/A'}</span></p>
+                            <p><strong>🏛️ Branch:</strong> ${bankDetails.BRANCH || 'N/A'}</p>
+                            <p><strong>🏙️ City:</strong> ${bankDetails.CITY || 'N/A'}</p>
+                            <p><strong>🗺️ State:</strong> ${bankDetails.STATE || 'N/A'}</p>
+                            <p><strong>📍 District:</strong> ${bankDetails.DISTRICT || 'N/A'}</p>
+                            <p><strong>📞 Contact:</strong> ${bankDetails.CONTACT || 'N/A'}</p>
+                            <p><strong>📫 Address:</strong> <span class="copyable" onclick="copyToClipboard(this)">${bankDetails.ADDRESS || 'N/A'}</span></p>
+                            <p><strong>💳 MICR:</strong> ${bankDetails.MICR || 'N/A'}</p>
+                            <p><strong>🌐 UPI Enabled:</strong> ${bankDetails.UPI ? 'Yes' : 'No'}</p>
+                            <p><strong>💸 IMPS:</strong> ${bankDetails.IMPS ? 'Available' : 'Not Available'}</p>
+                            <p><strong>💱 NEFT:</strong> ${bankDetails.NEFT ? 'Available' : 'Not Available'}</p>
+                            <p><strong>💲 RTGS:</strong> ${bankDetails.RTGS ? 'Available' : 'Not Available'}</p>
+                        </div>
+                    `;
+                }
+                
+                showResults(resultsHtml);
+            } else {
+                showError(`BATCOMPUTER FOUND NO BANK INFORMATION FOR THIS UPI ID.`);
+            }
+        } catch (error) {
+            showError(`ERROR: ${error.message}`);
+        } finally {
+            hideLoading();
+        }
+    });
+
+    // Back to top button functionality
     const backToTopButton = document.getElementById('backToTopBtn');
     
     // Show/hide button based on scroll position
@@ -890,49 +1150,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Add copy results button functionality
-    if (copyButton) {
-        copyButton.addEventListener('click', function() {
-            if (!resultsContainer || !resultsContainer.textContent.trim()) {
-                return;
-            }
-            
-            // Extract all text content from the results
-            let textToCopy = '';
-            
-            // Get all result cards or content
-            const resultCards = resultsContainer.querySelectorAll('.result-card');
-            
-            if (resultCards.length > 0) {
-                resultCards.forEach(card => {
-                    // Get all text content from the card, excluding buttons
-                    const cardText = Array.from(card.childNodes)
-                        .filter(node => node.nodeType === Node.TEXT_NODE || 
-                                (node.nodeType === Node.ELEMENT_NODE && 
-                                 !node.classList.contains('copy-btn')))
-                        .map(node => node.textContent)
-                        .join('\n')
-                        .trim();
-                    
-                    textToCopy += cardText + '\n\n';
-                });
-            } else {
-                // If no result cards, get all text content
-                textToCopy = resultsContainer.textContent.trim();
-            }
-            
-            // Copy the text to clipboard
-            navigator.clipboard.writeText(textToCopy)
-                .then(() => {
-                    showCopyMessage('Results copied!', true);
-                })
-                .catch(err => {
-                    showCopyMessage('Failed to copy results!', false);
-                    console.error('Failed to copy: ', err);
-                });
-        });
-    }
-    
     // Function to show a temporary message after copying
     function showCopyMessage(message, isSuccess) {
         // Create message element

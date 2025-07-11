@@ -29,6 +29,8 @@
                 <button class="tab-btn" data-tab="rc">RC to Phone <i class="fas fa-car"></i></button>
                 <button class="tab-btn" data-tab="voter">Voter Details <i class="fas fa-vote-yea"></i></button>
                 <button class="tab-btn" data-tab="password-leak">Password Leaks <i class="fas fa-unlock-alt"></i></button>
+                <button class="tab-btn" data-tab="fampay">FamPay to Phone <i class="fas fa-money-bill-wave"></i></button>
+                <button class="tab-btn" data-tab="upi-ifsc">UPI DETAILS <i class="fas fa-university"></i></button>
             </div>
 
             <div class="search-content">
@@ -177,6 +179,40 @@
                         <p>This tool checks if your email appears in known data breaches. Your data is handled securely and not stored.</p>
                     </div>
                 </div>
+
+                <!-- FamPay to Phone Tab -->
+                <div class="tab-content" id="fampay-tab">
+                    <h2>FamPay to Phone Number</h2>
+                    <p>Get phone number details from a FamPay UPI ID.</p>
+                    <div class="search-form">
+                        <input type="text" id="fampay-input" placeholder="Enter FamPay UPI ID (e.g., username@fam)">
+                        <button id="fampay-search-btn" class="batman-button">
+                            <span>GET PHONE NUMBER</span>
+                        </button>
+                    </div>
+                    
+                    <div class="warning-message">
+                        <h3>ℹ️ INFORMATION</h3>
+                        <p>This tool works specifically with FamPay UPI IDs that end with @fam.</p>
+                    </div>
+                </div>
+
+                <!-- UPI DETAILS Tab -->
+                <div class="tab-content" id="upi-ifsc-tab">
+                    <h2>UPI DETAILS Details</h2>
+                    <p>Get bank account and IFSC details from a UPI ID.</p>
+                    <div class="search-form">
+                        <input type="text" id="upi-ifsc-input" placeholder="Enter UPI ID (e.g., username@sbi)">
+                        <button id="upi-ifsc-search-btn" class="batman-button">
+                            <span>GET BANK DETAILS</span>
+                        </button>
+                    </div>
+                    
+                    <div class="warning-message">
+                        <h3>ℹ️ INFORMATION</h3>
+                        <p>This tool works with non-FamPay UPI IDs (e.g., @sbi, @ybl, @okaxis, etc.).</p>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -229,6 +265,8 @@
                 <li><strong>RC to Phone</strong> - Get vehicle owner details and phone number from RC number</li>
                 <li><strong>Voter Details</strong> - Get voter information using EPIC/Voter ID number</li>
                 <li><strong>Password Leaks</strong> - Check if your email and passwords have been leaked in data breaches</li>
+                <li><strong>FamPay to Phone</strong> - Get phone number from FamPay UPI ID</li>
+                <li><strong>UPI DETAILS</strong> - Get bank account and IFSC details from a UPI ID</li>
             </ul>
             <p>For PAN Details, RC to Phone, and Voter Details, you'll need a special API key which you can get by contacting @icodeinbinary on telegram. Password Leak checking doesn't require any API key.</p>
         </div>

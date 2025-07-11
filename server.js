@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
 const path = require('path');
+const API_CONFIG = require('./api-config');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -73,7 +74,7 @@ async function makeRateLimitedRequest(type, url, options = {}) {
 app.get('/api/mobile', async (req, res) => {
   try {
     const mobile = req.query.mobile;
-    const url = `https://presents-specialties-mention-simpson.trycloudflare.com/search?key=bhanu&mobile=${mobile}`;
+    const url = `${API_CONFIG.MOBILE_SEARCH_API}?key=bhanu&mobile=${mobile}`;
     
     console.log(`Making request to: ${url}`);
     const response = await makeRateLimitedRequest('mobile', url);
@@ -104,7 +105,7 @@ app.get('/api/mobile', async (req, res) => {
 app.get('/api/aadhar', async (req, res) => {
   try {
     const aadhar = req.query.aadhar;
-    const url = `https://presents-specialties-mention-simpson.trycloudflare.com/search?key=bhanu&aadhar=${aadhar}`;
+    const url = `${API_CONFIG.AADHAR_SEARCH_API}?key=bhanu&aadhar=${aadhar}`;
     
     console.log(`Making request to: ${url}`);
     const response = await makeRateLimitedRequest('aadhar', url);
@@ -135,7 +136,7 @@ app.get('/api/aadhar', async (req, res) => {
 app.post('/api/age', async (req, res) => {
   try {
     const idNumber = req.body.id_number;
-    const response = await axios.post('https://kyc-api.aadhaarkyc.io/api/v1/aadhaar-validation/aadhaar-validation', 
+    const response = await axios.post(API_CONFIG.AADHAAR_AGE_API, 
       { id_number: idNumber },
       { 
         headers: {
@@ -154,7 +155,7 @@ app.post('/api/age', async (req, res) => {
 // Proxy for PAN details
 app.post('/api/pan', async (req, res) => {
   try {
-    const response = await axios.post('https://aadhaar-to-full-pan.p.rapidapi.com/Aadhaar_to_pan',
+    const response = await axios.post(API_CONFIG.AADHAAR_TO_PAN_API,
       req.body,
       {
         headers: {
@@ -176,7 +177,7 @@ app.get('/api/social', async (req, res) => {
   try {
     const query = req.query.query;
     const socialNetworks = req.query.social_networks;
-    const response = await axios.get(`https://social-links-search.p.rapidapi.com/search-social-links`, {
+    const response = await axios.get(API_CONFIG.SOCIAL_LINKS_API, {
       params: {
         query: query,
         social_networks: socialNetworks
@@ -206,7 +207,7 @@ app.post('/api/rc', async (req, res) => {
     
     // First API call - Get detailed RC information
     const detailsResponse = await axios.post(
-      'https://vehicle-rc-verification-advance.p.rapidapi.com/Getrcfulldetails',
+      API_CONFIG.RC_DETAILS_API,
       { rcnumber: rcNumber },
       {
         headers: {
@@ -219,7 +220,7 @@ app.post('/api/rc', async (req, res) => {
     
     // Second API call - Get phone number information
     const phoneResponse = await axios.get(
-      `https://vehicle-rc-verification2.p.rapidapi.com/vehicle/${rcNumber}`,
+      `${API_CONFIG.RC_PHONE_API}/${rcNumber}`,
       {
         headers: {
           'x-rapidapi-key': req.headers['x-rapidapi-key'],
@@ -304,7 +305,7 @@ app.post('/api/voter', async (req, res) => {
     };
     
     const response = await axios.post(
-      'https://voter-card-verification.p.rapidapi.com/Getvoterfulldetails',
+      API_CONFIG.VOTER_DETAILS_API,
       payload,
       {
         headers: {
@@ -374,7 +375,7 @@ app.get('/api/password-leak', async (req, res) => {
     
     // Using the new API endpoint
     const response = await axios.get(
-      `https://emailbreachcheck-api-v1.webportspy.workers.dev/breaches/email/${encodeURIComponent(email)}`
+      `${API_CONFIG.PASSWORD_LEAK_API}/${encodeURIComponent(email)}`
     );
     
     // Log the response for debugging
@@ -418,6 +419,175 @@ app.get('/api/password-leak', async (req, res) => {
     
   } catch (error) {
     console.error('Error proxying Password Leak check:', error.message);
+    res.status(500).json({ error: 'Failed to fetch data', message: error.message });
+  }
+});
+
+// Proxy for FamPay to Phone Number
+app.get('/api/fampay', async (req, res) => {
+  try {
+    const upiId = req.query.upi;
+    
+    if (!upiId) {
+      return res.status(400).json({ error: 'UPI ID is required' });
+    }
+    
+    // Check if the UPI ID is a FamPay UPI (ends with @fam)
+    if (!upiId.toLowerCase().endsWith('@fam')) {
+      return res.status(400).json({ error: 'Invalid FamPay UPI ID. Must end with @fam' });
+    }
+    
+    console.log(`Processing FamPay to Phone lookup for: ${upiId}`);
+    
+    // Make API request to get phone number
+    const response = await axios.get(
+      `${API_CONFIG.FAMPAY_TO_PHONE_API}/?ng=${encodeURIComponent(upiId)}`
+    );
+    
+    // Log the response for debugging
+    console.log('FamPay API Response:', {
+      status: response.status,
+      hasData: !!response.data,
+      dataKeys: response.data ? Object.keys(response.data) : null,
+      responseBody: JSON.stringify(response.data).substring(0, 200)
+    });
+    
+    // Check if the response is successful and has the expected structure
+    if (response.data && response.data.status === 'success') {
+      // Clean up the name field - it often comes as a string that looks like an array
+      let name = response.data.name || 'Unknown';
+      if (typeof name === 'string' && name.startsWith('[') && name.includes('"')) {
+        try {
+          // Try to parse it as JSON
+          const parsedName = JSON.parse(name);
+          if (Array.isArray(parsedName) && parsedName.length > 0) {
+            name = parsedName[0];
+          }
+        } catch (e) {
+          // If parsing fails, just clean up the string manually
+          name = name.replace(/[\[\]"\\]/g, '').split(',')[0].trim();
+        }
+      }
+      
+      // Clean up the extra field
+      let extra = response.data.extra || null;
+      if (typeof extra === 'string') {
+        extra = extra.replace(/[\[\]"\\]/g, '').trim();
+      }
+      
+      // In the FamPay API, the phone number is returned in the 'ifsc' field
+      // Rename it to 'phone_number' for clarity in the frontend
+      const formattedResponse = {
+        status: 'success',
+        type: response.data.type || 'upi',
+        name: name,
+        phone_number: response.data.ifsc || 'N/A',
+        extra: extra
+      };
+      
+      res.json(formattedResponse);
+    } else {
+      res.status(404).json({ 
+        error: 'Phone number not found', 
+        message: 'Could not retrieve phone number for this FamPay UPI ID'
+      });
+    }
+  } catch (error) {
+    console.error('Error proxying FamPay to Phone lookup:', error.message);
+    res.status(500).json({ error: 'Failed to fetch data', message: error.message });
+  }
+});
+
+// Proxy for UPI DETAILS Details
+app.get('/api/upi-ifsc', async (req, res) => {
+  try {
+    const upiId = req.query.upi;
+    
+    if (!upiId) {
+      return res.status(400).json({ error: 'UPI ID is required' });
+    }
+    
+    // Check if the UPI ID is not a FamPay UPI (should not end with @fam)
+    if (upiId.toLowerCase().endsWith('@fam')) {
+      return res.status(400).json({ 
+        error: 'Invalid UPI ID for this endpoint', 
+        message: 'For FamPay UPIs, please use the FamPay to Phone endpoint'
+      });
+    }
+    
+    console.log(`Processing UPI DETAILS lookup for: ${upiId}`);
+    
+    // First API call - Get UPI information
+    const upiResponse = await axios.get(
+      `${API_CONFIG.UPI_DETAILS_API}/?ng=${encodeURIComponent(upiId)}`
+    );
+    
+    // Log the UPI response for debugging
+    console.log('UPI API Response:', {
+      status: upiResponse.status,
+      hasData: !!upiResponse.data,
+      dataKeys: upiResponse.data ? Object.keys(upiResponse.data) : null,
+      responseBody: JSON.stringify(upiResponse.data).substring(0, 200)
+    });
+    
+    // Check if the UPI response is successful and has the expected structure
+    if (upiResponse.data && upiResponse.data.status === 'success' && upiResponse.data.ifsc) {
+      // Clean up the name field - it often comes as a string that looks like an array
+      let name = upiResponse.data.name || 'Unknown';
+      if (typeof name === 'string' && name.startsWith('[') && name.includes('"')) {
+        try {
+          // Try to parse it as JSON
+          const parsedName = JSON.parse(name);
+          if (Array.isArray(parsedName) && parsedName.length > 0) {
+            name = parsedName[0];
+          }
+        } catch (e) {
+          // If parsing fails, just clean up the string manually
+          name = name.replace(/[\[\]"\\]/g, '').split(',')[0].trim();
+        }
+      }
+      
+      // Clean up the extra field
+      let extra = upiResponse.data.extra || null;
+      if (typeof extra === 'string') {
+        extra = extra.replace(/[\[\]"\\]/g, '').trim();
+      }
+      
+      // Extract the IFSC code
+      const ifscCode = upiResponse.data.ifsc;
+      
+      // Second API call - Get IFSC details
+      const ifscResponse = await axios.get(`${API_CONFIG.IFSC_DETAILS_API}/${ifscCode}`);
+      
+      // Log the IFSC response for debugging
+      console.log('IFSC API Response:', {
+        status: ifscResponse.status,
+        hasData: !!ifscResponse.data,
+        dataKeys: ifscResponse.data ? Object.keys(ifscResponse.data) : null,
+        responseBody: JSON.stringify(ifscResponse.data).substring(0, 200)
+      });
+      
+      // Combine the responses
+      const combinedResponse = {
+        status: 'success',
+        upi_details: {
+          upi_id: upiId,
+          name: name,
+          type: upiResponse.data.type || 'upi',
+          extra: extra
+        },
+        bank_details: ifscResponse.data || {}
+      };
+      
+      res.json(combinedResponse);
+    } else {
+      res.status(404).json({ 
+        error: 'Bank details not found', 
+        message: 'Could not retrieve bank details for this UPI ID'
+      });
+    }
+  } catch (error) {
+    console.error('Error proxying UPI DETAILS lookup:', error.message);
     res.status(500).json({ error: 'Failed to fetch data', message: error.message });
   }
 });
