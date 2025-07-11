@@ -48,9 +48,8 @@ async function makeRateLimitedRequest(type, url, options = {}) {
     // Increment the counter
     rateLimits[type].count++;
     
-    // Make the request
-    const response = await axios(url, options);
-    return response;
+    // Make the request using the retry helper
+    return await makeRequestWithRetry(url, options);
   } catch (error) {
     // If we get a 429, wait and retry once
     if (error.response && error.response.status === 429) {
@@ -63,11 +62,41 @@ async function makeRateLimitedRequest(type, url, options = {}) {
       rateLimits[type].timestamp = Date.now();
       rateLimits[type].count = 1;
       
-      return await axios(url, options);
+      return await makeRequestWithRetry(url, options);
     }
     
     throw error;
   }
+}
+
+// Helper function to make API requests with retries
+async function makeRequestWithRetry(url, options = {}, maxRetries = 3) {
+  let retries = maxRetries;
+  let lastError = null;
+  
+  while (retries > 0) {
+    try {
+      // Set a default timeout if not provided
+      if (!options.timeout) {
+        options.timeout = 10000; // 10 seconds
+      }
+      
+      const response = await axios(url, options);
+      return response;
+    } catch (error) {
+      lastError = error;
+      console.error(`API request failed (${retries} retries left): ${url}`, error.message);
+      retries--;
+      
+      // Wait before retrying (increasing delay with each retry)
+      if (retries > 0) {
+        const delay = (maxRetries - retries) * 1000; // 1s, 2s, 3s...
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+  
+  throw lastError || new Error(`Failed to fetch data from ${url} after ${maxRetries} attempts`);
 }
 
 // Proxy for mobile search
@@ -439,10 +468,41 @@ app.get('/api/fampay', async (req, res) => {
     
     console.log(`Processing FamPay to Phone lookup for: ${upiId}`);
     
-    // Make API request to get phone number
-    const response = await axios.get(
-      `${API_CONFIG.FAMPAY_TO_PHONE_API}/?ng=${encodeURIComponent(upiId)}`
-    );
+    // Add retry logic for the API call
+    let response = null;
+    let retries = 3;
+    let success = false;
+    let lastError = null;
+    
+    while (retries > 0 && !success) {
+      try {
+        // Make API request to get phone number
+        response = await axios.get(
+          `${API_CONFIG.FAMPAY_TO_PHONE_API}/?ng=${encodeURIComponent(upiId)}`,
+          { timeout: 10000 } // 10 second timeout
+        );
+        
+        // Check if we got a valid response
+        if (response && response.data && response.data.status === 'success') {
+          success = true;
+        } else {
+          throw new Error('Invalid response format or unsuccessful status');
+        }
+      } catch (error) {
+        lastError = error;
+        console.error(`FamPay API attempt failed (${retries} retries left):`, error.message);
+        retries--;
+        
+        // Wait for 1 second before retrying
+        if (retries > 0) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
+    }
+    
+    if (!success) {
+      throw lastError || new Error('Failed to get data after multiple attempts');
+    }
     
     // Log the response for debugging
     console.log('FamPay API Response:', {
@@ -452,46 +512,38 @@ app.get('/api/fampay', async (req, res) => {
       responseBody: JSON.stringify(response.data).substring(0, 200)
     });
     
-    // Check if the response is successful and has the expected structure
-    if (response.data && response.data.status === 'success') {
-      // Clean up the name field - it often comes as a string that looks like an array
-      let name = response.data.name || 'Unknown';
-      if (typeof name === 'string' && name.startsWith('[') && name.includes('"')) {
-        try {
-          // Try to parse it as JSON
-          const parsedName = JSON.parse(name);
-          if (Array.isArray(parsedName) && parsedName.length > 0) {
-            name = parsedName[0];
-          }
-        } catch (e) {
-          // If parsing fails, just clean up the string manually
-          name = name.replace(/[\[\]"\\]/g, '').split(',')[0].trim();
+    // Clean up the name field - it often comes as a string that looks like an array
+    let name = response.data.name || 'Unknown';
+    if (typeof name === 'string' && name.startsWith('[') && name.includes('"')) {
+      try {
+        // Try to parse it as JSON
+        const parsedName = JSON.parse(name);
+        if (Array.isArray(parsedName) && parsedName.length > 0) {
+          name = parsedName[0];
         }
+      } catch (e) {
+        // If parsing fails, just clean up the string manually
+        name = name.replace(/[\[\]"\\]/g, '').split(',')[0].trim();
       }
-      
-      // Clean up the extra field
-      let extra = response.data.extra || null;
-      if (typeof extra === 'string') {
-        extra = extra.replace(/[\[\]"\\]/g, '').trim();
-      }
-      
-      // In the FamPay API, the phone number is returned in the 'ifsc' field
-      // Rename it to 'phone_number' for clarity in the frontend
-      const formattedResponse = {
-        status: 'success',
-        type: response.data.type || 'upi',
-        name: name,
-        phone_number: response.data.ifsc || 'N/A',
-        extra: extra
-      };
-      
-      res.json(formattedResponse);
-    } else {
-      res.status(404).json({ 
-        error: 'Phone number not found', 
-        message: 'Could not retrieve phone number for this FamPay UPI ID'
-      });
     }
+    
+    // Clean up the extra field
+    let extra = response.data.extra || null;
+    if (typeof extra === 'string') {
+      extra = extra.replace(/[\[\]"\\]/g, '').trim();
+    }
+    
+    // In the FamPay API, the phone number is returned in the 'ifsc' field
+    // Rename it to 'phone_number' for clarity in the frontend
+    const formattedResponse = {
+      status: 'success',
+      type: response.data.type || 'upi',
+      name: name,
+      phone_number: response.data.ifsc || 'N/A',
+      extra: extra
+    };
+    
+    res.json(formattedResponse);
   } catch (error) {
     console.error('Error proxying FamPay to Phone lookup:', error.message);
     res.status(500).json({ error: 'Failed to fetch data', message: error.message });
@@ -517,10 +569,41 @@ app.get('/api/upi-ifsc', async (req, res) => {
     
     console.log(`Processing UPI DETAILS lookup for: ${upiId}`);
     
-    // First API call - Get UPI information
-    const upiResponse = await axios.get(
-      `${API_CONFIG.UPI_DETAILS_API}/?ng=${encodeURIComponent(upiId)}`
-    );
+    // Add retry logic for the first API call
+    let upiResponse = null;
+    let retries = 3;
+    let success = false;
+    let lastError = null;
+    
+    while (retries > 0 && !success) {
+      try {
+        // First API call - Get UPI information
+        upiResponse = await axios.get(
+          `${API_CONFIG.UPI_DETAILS_API}/?ng=${encodeURIComponent(upiId)}`,
+          { timeout: 10000 } // 10 second timeout
+        );
+        
+        // Check if we got a valid response
+        if (upiResponse && upiResponse.data && upiResponse.data.status === 'success' && upiResponse.data.ifsc) {
+          success = true;
+        } else {
+          throw new Error('Invalid UPI response format or unsuccessful status');
+        }
+      } catch (error) {
+        lastError = error;
+        console.error(`UPI API attempt failed (${retries} retries left):`, error.message);
+        retries--;
+        
+        // Wait for 1 second before retrying
+        if (retries > 0) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
+    }
+    
+    if (!success) {
+      throw lastError || new Error('Failed to get UPI data after multiple attempts');
+    }
     
     // Log the UPI response for debugging
     console.log('UPI API Response:', {
@@ -530,35 +613,65 @@ app.get('/api/upi-ifsc', async (req, res) => {
       responseBody: JSON.stringify(upiResponse.data).substring(0, 200)
     });
     
-    // Check if the UPI response is successful and has the expected structure
-    if (upiResponse.data && upiResponse.data.status === 'success' && upiResponse.data.ifsc) {
-      // Clean up the name field - it often comes as a string that looks like an array
-      let name = upiResponse.data.name || 'Unknown';
-      if (typeof name === 'string' && name.startsWith('[') && name.includes('"')) {
-        try {
-          // Try to parse it as JSON
-          const parsedName = JSON.parse(name);
-          if (Array.isArray(parsedName) && parsedName.length > 0) {
-            name = parsedName[0];
-          }
-        } catch (e) {
-          // If parsing fails, just clean up the string manually
-          name = name.replace(/[\[\]"\\]/g, '').split(',')[0].trim();
+    // Clean up the name field - it often comes as a string that looks like an array
+    let name = upiResponse.data.name || 'Unknown';
+    if (typeof name === 'string' && name.startsWith('[') && name.includes('"')) {
+      try {
+        // Try to parse it as JSON
+        const parsedName = JSON.parse(name);
+        if (Array.isArray(parsedName) && parsedName.length > 0) {
+          name = parsedName[0];
+        }
+      } catch (e) {
+        // If parsing fails, just clean up the string manually
+        name = name.replace(/[\[\]"\\]/g, '').split(',')[0].trim();
+      }
+    }
+    
+    // Clean up the extra field
+    let extra = upiResponse.data.extra || null;
+    if (typeof extra === 'string') {
+      extra = extra.replace(/[\[\]"\\]/g, '').trim();
+    }
+    
+    // Extract the IFSC code
+    const ifscCode = upiResponse.data.ifsc;
+    
+    // Add retry logic for the second API call
+    let ifscResponse = null;
+    retries = 3;
+    success = false;
+    lastError = null;
+    
+    while (retries > 0 && !success) {
+      try {
+        // Second API call - Get IFSC details
+        ifscResponse = await axios.get(
+          `${API_CONFIG.IFSC_DETAILS_API}/${ifscCode}`,
+          { timeout: 10000 } // 10 second timeout
+        );
+        
+        // Check if we got a valid response
+        if (ifscResponse && ifscResponse.data && ifscResponse.data.BANK) {
+          success = true;
+        } else {
+          throw new Error('Invalid IFSC response format');
+        }
+      } catch (error) {
+        lastError = error;
+        console.error(`IFSC API attempt failed (${retries} retries left):`, error.message);
+        retries--;
+        
+        // Wait for 1 second before retrying
+        if (retries > 0) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
         }
       }
-      
-      // Clean up the extra field
-      let extra = upiResponse.data.extra || null;
-      if (typeof extra === 'string') {
-        extra = extra.replace(/[\[\]"\\]/g, '').trim();
-      }
-      
-      // Extract the IFSC code
-      const ifscCode = upiResponse.data.ifsc;
-      
-      // Second API call - Get IFSC details
-      const ifscResponse = await axios.get(`${API_CONFIG.IFSC_DETAILS_API}/${ifscCode}`);
-      
+    }
+    
+    // If IFSC API fails after retries, we can still return UPI details
+    let bankDetails = {};
+    if (success) {
       // Log the IFSC response for debugging
       console.log('IFSC API Response:', {
         status: ifscResponse.status,
@@ -567,25 +680,26 @@ app.get('/api/upi-ifsc', async (req, res) => {
         responseBody: JSON.stringify(ifscResponse.data).substring(0, 200)
       });
       
-      // Combine the responses
-      const combinedResponse = {
-        status: 'success',
-        upi_details: {
-          upi_id: upiId,
-          name: name,
-          type: upiResponse.data.type || 'upi',
-          extra: extra
-        },
-        bank_details: ifscResponse.data || {}
-      };
-      
-      res.json(combinedResponse);
+      bankDetails = ifscResponse.data || {};
     } else {
-      res.status(404).json({ 
-        error: 'Bank details not found', 
-        message: 'Could not retrieve bank details for this UPI ID'
-      });
+      console.warn(`Could not fetch IFSC details for ${ifscCode} after multiple attempts`);
+      // Still return a partial response with just the IFSC code
+      bankDetails = { IFSC: ifscCode };
     }
+    
+    // Combine the responses
+    const combinedResponse = {
+      status: 'success',
+      upi_details: {
+        upi_id: upiId,
+        name: name,
+        type: upiResponse.data.type || 'upi',
+        extra: extra
+      },
+      bank_details: bankDetails
+    };
+    
+    res.json(combinedResponse);
   } catch (error) {
     console.error('Error proxying UPI DETAILS lookup:', error.message);
     res.status(500).json({ error: 'Failed to fetch data', message: error.message });

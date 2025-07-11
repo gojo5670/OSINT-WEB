@@ -259,16 +259,46 @@ document.addEventListener('DOMContentLoaded', function() {
     async function fetchData(url, options = {}) {
         try {
             console.log(`Fetching data from: ${url}`);
-            const response = await fetch(url, options);
+            
+            // Add timeout to prevent hanging requests
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+            
+            // Add abort signal to options if not already present
+            const fetchOptions = {
+                ...options,
+                signal: controller.signal
+            };
+            
+            const response = await fetch(url, fetchOptions);
+            
+            // Clear the timeout since the request completed
+            clearTimeout(timeoutId);
             
             if (!response.ok) {
-                const errorText = await response.text();
+                let errorText = '';
+                try {
+                    errorText = await response.text();
+                } catch (e) {
+                    errorText = 'Could not read error response';
+                }
+                
                 console.error('Error response:', {
                     status: response.status,
                     statusText: response.statusText,
                     body: errorText
                 });
-                throw new Error(`HTTP error! Status: ${response.status}, ${errorText}`);
+                
+                // Handle specific status codes
+                if (response.status === 429) {
+                    throw new Error('Rate limit exceeded. Please wait a moment before trying again.');
+                } else if (response.status === 404) {
+                    throw new Error('The requested information could not be found.');
+                } else if (response.status >= 500) {
+                    throw new Error('Server error. The Batcomputer is currently experiencing technical difficulties.');
+                } else {
+                    throw new Error(`HTTP error! Status: ${response.status}, ${response.statusText}`);
+                }
             }
             
             const contentType = response.headers.get('content-type');
@@ -299,6 +329,12 @@ document.addEventListener('DOMContentLoaded', function() {
             
             return data;
         } catch (error) {
+            // Handle abort errors (timeouts)
+            if (error.name === 'AbortError') {
+                console.error('Request timed out');
+                throw new Error('Request timed out. Please try again later.');
+            }
+            
             console.error('Error fetching data:', error);
             throw error;
         }
@@ -1018,8 +1054,53 @@ document.addEventListener('DOMContentLoaded', function() {
         showLoading();
         
         try {
+            // Show a message that the search might take a moment
+            document.getElementById('results').innerHTML = `
+                <div class="warning-message">
+                    <h3>⌛ SEARCHING UPI DATABASE</h3>
+                    <p>The Batcomputer is searching for information on ${upiId}.</p>
+                    <p>This may take a moment as we're connecting to multiple secure databases.</p>
+                    <div class="spinner"></div>
+                </div>
+            `;
+            
             const apiUrl = `${API_ENDPOINTS.FAMPAY_TO_PHONE}?upi=${encodeURIComponent(upiId)}`;
-            const data = await fetchData(apiUrl);
+            
+            // Implement client-side retry logic
+            let data = null;
+            let attempts = 0;
+            const maxAttempts = 3;
+            
+            while (attempts < maxAttempts) {
+                try {
+                    attempts++;
+                    data = await fetchData(apiUrl);
+                    
+                    if (data && data.status === 'success') {
+                        break; // Success, exit the loop
+                    } else {
+                        throw new Error('Invalid response format');
+                    }
+                } catch (error) {
+                    console.error(`API attempt ${attempts} failed:`, error);
+                    
+                    if (attempts >= maxAttempts) {
+                        throw error; // Re-throw the error if we've exhausted all attempts
+                    }
+                    
+                    // Show retry message
+                    document.getElementById('results').innerHTML = `
+                        <div class="warning-message">
+                            <h3>⚠️ RETRYING CONNECTION</h3>
+                            <p>The Batcomputer encountered an issue. Retrying (Attempt ${attempts}/${maxAttempts})...</p>
+                            <div class="spinner"></div>
+                        </div>
+                    `;
+                    
+                    // Wait before retrying
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                }
+            }
             
             if (data && data.status === 'success') {
                 // Parse the name field using the helper function
@@ -1049,13 +1130,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 showError(`BATCOMPUTER FOUND NO INFORMATION FOR THIS FAMPAY UPI ID.`);
             }
         } catch (error) {
-            showError(`ERROR: ${error.message}`);
+            console.error('Error fetching FamPay data:', error);
+            showError(`ERROR: ${error.message || 'Failed to connect to the Batcomputer database'}`);
         } finally {
             hideLoading();
         }
     });
 
-    // UPI DETAILS Details functionality
+    // UPI DETAILS functionality
     document.getElementById('upi-ifsc-search-btn').addEventListener('click', async function() {
         const upiId = document.getElementById('upi-ifsc-input').value.trim();
         
@@ -1073,8 +1155,53 @@ document.addEventListener('DOMContentLoaded', function() {
         showLoading();
         
         try {
+            // Show a message that the search might take a moment
+            document.getElementById('results').innerHTML = `
+                <div class="warning-message">
+                    <h3>⌛ SEARCHING BANK DATABASE</h3>
+                    <p>The Batcomputer is searching for information on ${upiId}.</p>
+                    <p>This may take a moment as we're connecting to multiple secure databases.</p>
+                    <div class="spinner"></div>
+                </div>
+            `;
+            
             const apiUrl = `${API_ENDPOINTS.UPI_TO_IFSC}?upi=${encodeURIComponent(upiId)}`;
-            const data = await fetchData(apiUrl);
+            
+            // Implement client-side retry logic
+            let data = null;
+            let attempts = 0;
+            const maxAttempts = 3;
+            
+            while (attempts < maxAttempts) {
+                try {
+                    attempts++;
+                    data = await fetchData(apiUrl);
+                    
+                    if (data && data.status === 'success') {
+                        break; // Success, exit the loop
+                    } else {
+                        throw new Error('Invalid response format');
+                    }
+                } catch (error) {
+                    console.error(`API attempt ${attempts} failed:`, error);
+                    
+                    if (attempts >= maxAttempts) {
+                        throw error; // Re-throw the error if we've exhausted all attempts
+                    }
+                    
+                    // Show retry message
+                    document.getElementById('results').innerHTML = `
+                        <div class="warning-message">
+                            <h3>⚠️ RETRYING CONNECTION</h3>
+                            <p>The Batcomputer encountered an issue. Retrying (Attempt ${attempts}/${maxAttempts})...</p>
+                            <div class="spinner"></div>
+                        </div>
+                    `;
+                    
+                    // Wait before retrying
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                }
+            }
             
             if (data && data.status === 'success') {
                 // Parse the name field using the helper function
@@ -1116,6 +1243,13 @@ document.addEventListener('DOMContentLoaded', function() {
                             <p><strong>💲 RTGS:</strong> ${bankDetails.RTGS ? 'Available' : 'Not Available'}</p>
                         </div>
                     `;
+                } else {
+                    resultsHtml += `
+                        <div class="warning-message">
+                            <h3>⚠️ PARTIAL INFORMATION</h3>
+                            <p>The Batcomputer found UPI details but could not retrieve complete bank information.</p>
+                        </div>
+                    `;
                 }
                 
                 showResults(resultsHtml);
@@ -1123,7 +1257,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 showError(`BATCOMPUTER FOUND NO BANK INFORMATION FOR THIS UPI ID.`);
             }
         } catch (error) {
-            showError(`ERROR: ${error.message}`);
+            console.error('Error fetching UPI data:', error);
+            showError(`ERROR: ${error.message || 'Failed to connect to the Batcomputer database'}`);
         } finally {
             hideLoading();
         }
