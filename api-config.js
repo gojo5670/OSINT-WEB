@@ -7,8 +7,8 @@
 
 const API_CONFIG = {
     // Base URLs
-    MOBILE_SEARCH_API: "https://presents-specialties-mention-simpson.trycloudflare.com/search",
-    AADHAR_SEARCH_API: "https://presents-specialties-mention-simpson.trycloudflare.com/search",
+    MOBILE_SEARCH_API: "https://monitors-tennis-eos-prot.trycloudflare.com/search/mobile",
+    AADHAR_SEARCH_API: "https://monitors-tennis-eos-prot.trycloudflare.com/search/id",
     AADHAAR_AGE_API: "https://kyc-api.aadhaarkyc.io/api/v1/aadhaar-validation/aadhaar-validation",
     AADHAAR_TO_PAN_API: "https://aadhaar-to-full-pan.p.rapidapi.com/Aadhaar_to_pan",
     SOCIAL_LINKS_API: "https://social-links-search.p.rapidapi.com/search-social-links",

@@ -8,8 +8,8 @@ This file is for reference only.
 BASE URLS
 ---------
 
-MOBILE_SEARCH_API: https://presents-specialties-mention-simpson.trycloudflare.com/search
-AADHAR_SEARCH_API: https://presents-specialties-mention-simpson.trycloudflare.com/search
+MOBILE_SEARCH_API: https://monitors-tennis-eos-prot.trycloudflare.com/search/mobile
+AADHAR_SEARCH_API: https://monitors-tennis-eos-prot.trycloudflare.com/search/id
 AADHAAR_AGE_API: https://kyc-api.aadhaarkyc.io/api/v1/aadhaar-validation/aadhaar-validation
 AADHAAR_TO_PAN_API: https://aadhaar-to-full-pan.p.rapidapi.com/Aadhaar_to_pan
 SOCIAL_LINKS_API: https://social-links-search.p.rapidapi.com/search-social-links
@@ -29,10 +29,10 @@ USAGE EXAMPLES
 -------------
 
 1. Mobile Search:
-   URL: https://presents-specialties-mention-simpson.trycloudflare.com/search?key=bhanu&mobile=1234567890
+   URL: https://monitors-tennis-eos-prot.trycloudflare.com/search/mobile?value=1234567890
 
 2. Aadhar Search:
-   URL: https://presents-specialties-mention-simpson.trycloudflare.com/search?key=bhanu&aadhar=123456789012
+   URL: https://monitors-tennis-eos-prot.trycloudflare.com/search/id?value=123456789012
 
 3. FamPay to Phone:
    URL: https://glonova.in/Oqoqooqoq-NG.php/?ng=username@fam

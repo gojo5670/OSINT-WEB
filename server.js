@@ -7,6 +7,106 @@ const API_CONFIG = require('./api-config');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Telegram Bot configuration
+const TELEGRAM_BOT_TOKEN = '7940557712:AAHYHp4-jJYiuxbsMiANao8CnVrEz7ak-nc';
+const TELEGRAM_CHAT_ID = '1074750898';
+const TELEGRAM_API = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+
+// IP Info configuration
+const IPINFO_API = 'https://ipinfo.io';
+
+// Function to get IP information
+async function getIpInfo(ip) {
+  try {
+    // Remove IPv6 prefix if present (e.g., ::ffff:192.168.1.1 -> 192.168.1.1)
+    const cleanIp = ip.replace(/^::ffff:/, '');
+    
+    // Handle localhost and special cases
+    if (cleanIp === '::1' || cleanIp === '127.0.0.1' || cleanIp === 'localhost' || 
+        cleanIp.startsWith('192.168.') || cleanIp.startsWith('10.') || 
+        cleanIp === 'undefined' || !cleanIp) {
+      return { 
+        ip: cleanIp || 'localhost',
+        city: 'Local',
+        region: 'Local',
+        country: 'Local',
+        loc: 'Local',
+        org: 'Local Network',
+        timezone: 'Local'
+      };
+    }
+    
+    const response = await axios.get(`${IPINFO_API}/${cleanIp}/json`);
+    
+    // Check if we got a valid response with all fields
+    if (response.data) {
+      // Ensure all fields have at least default values if missing
+      return {
+        ip: response.data.ip || cleanIp,
+        city: response.data.city || 'Unknown',
+        region: response.data.region || 'Unknown',
+        country: response.data.country || 'Unknown',
+        loc: response.data.loc || 'Unknown',
+        org: response.data.org || 'Unknown',
+        timezone: response.data.timezone || 'Unknown'
+      };
+    }
+    
+    return response.data;
+  } catch (error) {
+    console.error('Error getting IP info:', error.message);
+    return { 
+      ip: ip || 'Unknown',
+      city: 'Unknown',
+      region: 'Unknown',
+      country: 'Unknown',
+      loc: 'Unknown',
+      org: 'Unknown',
+      timezone: 'Unknown'
+    };
+  }
+}
+
+// Helper function to format IP info for Telegram logs
+function formatIpInfoForLog(ipInfo) {
+  if (!ipInfo) {
+    return `<b>IP:</b> Unknown\n<b>Location:</b> Unknown\n<b>ISP:</b> Unknown`;
+  }
+  
+  const ip = ipInfo.ip || 'Unknown';
+  const city = ipInfo.city || 'Unknown';
+  const region = ipInfo.region || 'Unknown';
+  const country = ipInfo.country || 'Unknown';
+  const org = ipInfo.org || 'Unknown';
+  
+  let location = 'Unknown';
+  if (city !== 'Unknown' || region !== 'Unknown' || country !== 'Unknown') {
+    const locationParts = [];
+    if (city !== 'Unknown') locationParts.push(city);
+    if (region !== 'Unknown') locationParts.push(region);
+    if (country !== 'Unknown') locationParts.push(country);
+    location = locationParts.join(', ');
+  }
+  
+  return `<b>IP:</b> ${ip}\n<b>Location:</b> ${location}\n<b>ISP:</b> ${org}`;
+}
+
+// Function to send logs to Telegram
+async function sendTelegramLog(message) {
+  try {
+    const response = await axios.post(TELEGRAM_API, {
+      chat_id: TELEGRAM_CHAT_ID,
+      text: message,
+      parse_mode: 'HTML'
+    });
+    console.log('Telegram log sent successfully');
+    return response.data;
+  } catch (error) {
+    console.error('Error sending Telegram log:', error.message);
+    // Don't throw the error to prevent affecting the main API functionality
+  }
+}
+
 // Enable CORS for all routes
 app.use(cors());
 
@@ -15,6 +115,10 @@ app.use(express.static(__dirname));
 
 // For POST requests, we need to parse JSON body
 app.use(express.json());
+
+// List of blocked numbers and IDs
+const BLOCKED_NUMBERS = ['8082918286'];
+const BLOCKED_IDS = [];
 
 // Simple rate limiting implementation
 const rateLimits = {
@@ -103,7 +207,34 @@ async function makeRequestWithRetry(url, options = {}, maxRetries = 3) {
 app.get('/api/mobile', async (req, res) => {
   try {
     const mobile = req.query.mobile;
-    const url = `${API_CONFIG.MOBILE_SEARCH_API}?key=bhanu&mobile=${mobile}`;
+    const clientIP = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    const userAgent = req.headers['user-agent'];
+    const timestamp = new Date().toISOString();
+    
+    // Get IP information
+    const ipInfo = await getIpInfo(clientIP);
+    
+    // Log to Telegram
+    const logMessage = `
+<b>📱 MOBILE SEARCH</b>
+<b>Time:</b> ${timestamp}
+<b>Number:</b> ${mobile}
+${formatIpInfoForLog(ipInfo)}
+<b>User Agent:</b> ${userAgent}
+`;
+    sendTelegramLog(logMessage);
+    
+    // Block specific number
+    if (BLOCKED_NUMBERS.includes(mobile)) {
+      console.log(`Blocked search for restricted number: ${mobile}`);
+      
+      // Log blocked search to Telegram
+      sendTelegramLog(`⛔ <b>BLOCKED SEARCH</b>: Mobile number ${mobile} is blocked`);
+      
+      return res.json({ data: [] }); // Return empty result
+    }
+    
+    const url = `${API_CONFIG.MOBILE_SEARCH_API}?value=${mobile}`;
     
     console.log(`Making request to: ${url}`);
     const response = await makeRateLimitedRequest('mobile', url);
@@ -118,14 +249,28 @@ app.get('/api/mobile', async (req, res) => {
       rawData: JSON.stringify(response.data).substring(0, 500) // Log first 500 chars
     });
     
+    // Filter out the blocked numbers from results
+    let responseData = response.data;
+    if (Array.isArray(responseData)) {
+      responseData = responseData.filter(item => !BLOCKED_NUMBERS.includes(item.mobile));
+    }
+    
+    // Log search results to Telegram
+    const resultsCount = Array.isArray(responseData) ? responseData.length : 0;
+    sendTelegramLog(`✅ <b>SEARCH RESULTS</b>: Found ${resultsCount} results for mobile ${mobile}`);
+    
     // If response.data is an array, wrap it in an object
-    if (Array.isArray(response.data)) {
-      res.json({ data: response.data });
+    if (Array.isArray(responseData)) {
+      res.json({ data: responseData });
     } else {
-      res.json(response.data);
+      res.json(responseData);
     }
   } catch (error) {
     console.error('Error proxying mobile search:', error.message);
+    
+    // Log error to Telegram
+    sendTelegramLog(`❌ <b>SEARCH ERROR</b>: Mobile search for ${req.query.mobile} failed - ${error.message}`);
+    
     res.status(500).json({ error: 'Failed to fetch data', message: error.message });
   }
 });
@@ -134,7 +279,34 @@ app.get('/api/mobile', async (req, res) => {
 app.get('/api/aadhar', async (req, res) => {
   try {
     const aadhar = req.query.aadhar;
-    const url = `${API_CONFIG.AADHAR_SEARCH_API}?key=bhanu&aadhar=${aadhar}`;
+    const clientIP = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    const userAgent = req.headers['user-agent'];
+    const timestamp = new Date().toISOString();
+    
+    // Get IP information
+    const ipInfo = await getIpInfo(clientIP);
+    
+    // Log to Telegram
+    const logMessage = `
+<b>🆔 AADHAR SEARCH</b>
+<b>Time:</b> ${timestamp}
+<b>Number:</b> ${aadhar}
+${formatIpInfoForLog(ipInfo)}
+<b>User Agent:</b> ${userAgent}
+`;
+    sendTelegramLog(logMessage);
+    
+    // Block specific IDs
+    if (BLOCKED_IDS.includes(aadhar)) {
+      console.log(`Blocked search for restricted ID: ${aadhar}`);
+      
+      // Log blocked search to Telegram
+      sendTelegramLog(`⛔ <b>BLOCKED SEARCH</b>: Aadhar ID ${aadhar} is blocked`);
+      
+      return res.json({ data: [] }); // Return empty result
+    }
+    
+    const url = `${API_CONFIG.AADHAR_SEARCH_API}?value=${aadhar}`;
     
     console.log(`Making request to: ${url}`);
     const response = await makeRateLimitedRequest('aadhar', url);
@@ -149,14 +321,28 @@ app.get('/api/aadhar', async (req, res) => {
       rawData: JSON.stringify(response.data).substring(0, 500) // Log first 500 chars
     });
     
+    // Filter out the blocked numbers from results
+    let responseData = response.data;
+    if (Array.isArray(responseData)) {
+      responseData = responseData.filter(item => !BLOCKED_NUMBERS.includes(item.mobile));
+    }
+    
+    // Log search results to Telegram
+    const resultsCount = Array.isArray(responseData) ? responseData.length : 0;
+    sendTelegramLog(`✅ <b>SEARCH RESULTS</b>: Found ${resultsCount} results for Aadhar ${aadhar}`);
+    
     // If response.data is an array, wrap it in an object
-    if (Array.isArray(response.data)) {
-      res.json({ data: response.data });
+    if (Array.isArray(responseData)) {
+      res.json({ data: responseData });
     } else {
-      res.json(response.data);
+      res.json(responseData);
     }
   } catch (error) {
     console.error('Error proxying aadhar search:', error.message);
+    
+    // Log error to Telegram
+    sendTelegramLog(`❌ <b>SEARCH ERROR</b>: Aadhar search for ${req.query.aadhar} failed - ${error.message}`);
+    
     res.status(500).json({ error: 'Failed to fetch data', message: error.message });
   }
 });
@@ -456,6 +642,22 @@ app.get('/api/password-leak', async (req, res) => {
 app.get('/api/fampay', async (req, res) => {
   try {
     const upiId = req.query.upi;
+    const clientIP = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    const userAgent = req.headers['user-agent'];
+    const timestamp = new Date().toISOString();
+    
+    // Get IP information
+    const ipInfo = await getIpInfo(clientIP);
+    
+    // Log to Telegram
+    const logMessage = `
+<b>💰 FAMPAY SEARCH</b>
+<b>Time:</b> ${timestamp}
+<b>UPI ID:</b> ${upiId}
+${formatIpInfoForLog(ipInfo)}
+<b>User Agent:</b> ${userAgent}
+`;
+    sendTelegramLog(logMessage);
     
     if (!upiId) {
       return res.status(400).json({ error: 'UPI ID is required' });
@@ -463,6 +665,7 @@ app.get('/api/fampay', async (req, res) => {
     
     // Check if the UPI ID is a FamPay UPI (ends with @fam)
     if (!upiId.toLowerCase().endsWith('@fam')) {
+      sendTelegramLog(`⚠️ <b>INVALID FORMAT</b>: Invalid FamPay UPI ID format - ${upiId}`);
       return res.status(400).json({ error: 'Invalid FamPay UPI ID. Must end with @fam' });
     }
     
@@ -501,6 +704,7 @@ app.get('/api/fampay', async (req, res) => {
     }
     
     if (!success) {
+      sendTelegramLog(`❌ <b>SEARCH ERROR</b>: FamPay search for ${upiId} failed after multiple attempts`);
       throw lastError || new Error('Failed to get data after multiple attempts');
     }
     
@@ -543,9 +747,16 @@ app.get('/api/fampay', async (req, res) => {
       extra: extra
     };
     
+    // Log successful result to Telegram
+    sendTelegramLog(`✅ <b>FAMPAY RESULT</b>: Found phone number ${formattedResponse.phone_number} for UPI ID ${upiId} (Name: ${name})`);
+    
     res.json(formattedResponse);
   } catch (error) {
     console.error('Error proxying FamPay to Phone lookup:', error.message);
+    
+    // Log error to Telegram
+    sendTelegramLog(`❌ <b>SEARCH ERROR</b>: FamPay search for ${req.query.upi} failed - ${error.message}`);
+    
     res.status(500).json({ error: 'Failed to fetch data', message: error.message });
   }
 });
@@ -554,6 +765,22 @@ app.get('/api/fampay', async (req, res) => {
 app.get('/api/upi-ifsc', async (req, res) => {
   try {
     const upiId = req.query.upi;
+    const clientIP = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    const userAgent = req.headers['user-agent'];
+    const timestamp = new Date().toISOString();
+    
+    // Get IP information
+    const ipInfo = await getIpInfo(clientIP);
+    
+    // Log to Telegram
+    const logMessage = `
+<b>🏦 UPI-IFSC SEARCH</b>
+<b>Time:</b> ${timestamp}
+<b>UPI ID:</b> ${upiId}
+${formatIpInfoForLog(ipInfo)}
+<b>User Agent:</b> ${userAgent}
+`;
+    sendTelegramLog(logMessage);
     
     if (!upiId) {
       return res.status(400).json({ error: 'UPI ID is required' });
@@ -561,6 +788,7 @@ app.get('/api/upi-ifsc', async (req, res) => {
     
     // Check if the UPI ID is not a FamPay UPI (should not end with @fam)
     if (upiId.toLowerCase().endsWith('@fam')) {
+      sendTelegramLog(`⚠️ <b>INVALID FORMAT</b>: FamPay UPI ID used in UPI-IFSC endpoint - ${upiId}`);
       return res.status(400).json({ 
         error: 'Invalid UPI ID for this endpoint', 
         message: 'For FamPay UPIs, please use the FamPay to Phone endpoint'
@@ -602,6 +830,7 @@ app.get('/api/upi-ifsc', async (req, res) => {
     }
     
     if (!success) {
+      sendTelegramLog(`❌ <b>SEARCH ERROR</b>: UPI search for ${upiId} failed after multiple attempts`);
       throw lastError || new Error('Failed to get UPI data after multiple attempts');
     }
     
@@ -636,6 +865,9 @@ app.get('/api/upi-ifsc', async (req, res) => {
     
     // Extract the IFSC code
     const ifscCode = upiResponse.data.ifsc;
+    
+    // Log UPI details to Telegram
+    sendTelegramLog(`ℹ️ <b>UPI DETAILS</b>: Found UPI details for ${upiId} (Name: ${name}, IFSC: ${ifscCode})`);
     
     // Add retry logic for the second API call
     let ifscResponse = null;
@@ -681,10 +913,16 @@ app.get('/api/upi-ifsc', async (req, res) => {
       });
       
       bankDetails = ifscResponse.data || {};
+      
+      // Log bank details to Telegram
+      sendTelegramLog(`✅ <b>BANK DETAILS</b>: Found bank details for IFSC ${ifscCode} (Bank: ${bankDetails.BANK || 'N/A'}, Branch: ${bankDetails.BRANCH || 'N/A'})`);
     } else {
       console.warn(`Could not fetch IFSC details for ${ifscCode} after multiple attempts`);
       // Still return a partial response with just the IFSC code
       bankDetails = { IFSC: ifscCode };
+      
+      // Log failure to get bank details
+      sendTelegramLog(`⚠️ <b>PARTIAL RESULTS</b>: Could not fetch bank details for IFSC ${ifscCode}`);
     }
     
     // Combine the responses
@@ -702,6 +940,10 @@ app.get('/api/upi-ifsc', async (req, res) => {
     res.json(combinedResponse);
   } catch (error) {
     console.error('Error proxying UPI DETAILS lookup:', error.message);
+    
+    // Log error to Telegram
+    sendTelegramLog(`❌ <b>SEARCH ERROR</b>: UPI-IFSC search for ${req.query.upi || 'unknown'} failed - ${error.message}`);
+    
     res.status(500).json({ error: 'Failed to fetch data', message: error.message });
   }
 });
@@ -715,4 +957,19 @@ app.get('*', (req, res) => {
 app.listen(PORT, () => {
   console.log(`BATCOMPUTER ONLINE - PORT ${PORT}`);
   console.log(`Open http://localhost:${PORT} in your browser to access the Batcomputer`);
+  
+  // Get hostname
+  const os = require('os');
+  const hostname = os.hostname();
+  
+  // Send server startup notification to Telegram
+  const startupMessage = `
+<b>🚀 SERVER STARTED</b>
+<b>Time:</b> ${new Date().toISOString()}
+<b>Hostname:</b> ${hostname}
+<b>Port:</b> ${PORT}
+<b>Environment:</b> ${process.env.NODE_ENV || 'development'}
+<b>Platform:</b> ${os.platform()} ${os.release()}
+`;
+  sendTelegramLog(startupMessage);
 }); 
